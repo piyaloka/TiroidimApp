@@ -1,0 +1,43 @@
+from kivymd.app import MDApp
+from kivy.uix.screenmanager import ScreenManager
+from kivy.core.window import Window
+from kivy.lang import Builder
+import os
+
+# --- EKRANLARI İÇERİ AKTAR (Senin klasör yapına göre) ---
+# Eğer VS Code hata verirse aldırma, dosyalar dolunca düzelir.
+from screens.giris_ekrani import GirisEkrani
+from screens.dashboard_ekrani import DashboardEkrani
+from screens.takvim_ekrani import TakvimEkrani
+from screens.grafik_ekrani import GrafikEkrani
+from screens.artibutonu_ekrani import ArtiButonuEkrani
+from screens.duzenleme_ekrani import DuzenlemeEkrani
+
+# Telefon boyutu
+Window.size = (360, 640)
+
+class TiroidimApp(MDApp):
+    def build(self):
+        self.theme_cls.primary_palette = "DeepPurple"
+        self.theme_cls.accent_palette = "Green"
+        self.title = "Tiroidim"
+
+        # Yöneticiyi (ScreenManager) oluştur
+        yonetici = ScreenManager()
+
+        # Ekranları yöneticiye ekle (İsimlerini belirleyerek)
+        # Dikkat: Dosyalardaki Class isimlerini (GirisEkrani vb.) kullanıyoruz
+        yonetici.add_widget(GirisEkrani(name="giris"))
+        yonetici.add_widget(DashboardEkrani(name="dashboard"))
+        yonetici.add_widget(TakvimEkrani(name="takvim"))
+        yonetici.add_widget(GrafikEkrani(name="grafik"))
+        yonetici.add_widget(ArtiButonuEkrani(name="arti_butonu"))
+        yonetici.add_widget(DuzenlemeEkrani(name="duzenleme"))
+
+        # İlk açılacak ekran
+        yonetici.current = "giris"
+        
+        return yonetici
+
+if __name__ == "__main__":
+    TiroidimApp().run()
