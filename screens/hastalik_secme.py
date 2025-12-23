@@ -1,7 +1,7 @@
 from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
 from kivy.properties import StringProperty
-from onboardingpage import user_profile
+from profil_ekrani import user_profile
 
 class DiseaseScreen(Screen):
     # Seçilen hastalığı ekranda dinamik olarak göstermek için
