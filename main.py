@@ -3,7 +3,11 @@ from kivy.uix.screenmanager import ScreenManager
 from kivy.core.window import Window
 from kivy.lang import Builder
 import os
-Builder.load_file("dashboard.kv")
+
+Builder.load_file("assets/dashboard.kv")  
+Builder.load_file("assets/giris.kv")      
+Builder.load_file("assets/takvim.kv")     
+Builder.load_file("assets/grafik.kv")    
 
 # --- EKRANLARI İÇERİ AKTAR (Senin klasör yapına göre) ---
 # Eğer VS Code hata verirse aldırma, dosyalar dolunca düzelir.
