@@ -2,7 +2,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
 from profil_ekrani import user_profile
 
-class ProfileEditScreen(Screen):
+class duzenleme_ekrani(Screen):
     def on_enter(self):
         # Onboarding ekranında girilen verileri kart üzerine yansıtıyoruz
         self.ids.full_name.text = f"{user_profile['isim']} {user_profile['soyisim']}"
