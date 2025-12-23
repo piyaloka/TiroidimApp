@@ -3,13 +3,13 @@ from kivymd.uix.screen import MDScreen
 from kivy.uix.boxlayout import BoxLayout
 
 # Grafik kütüphaneleri
-from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
+from graph_lib.backend_kivyagg import FigureCanvasKivyAgg
 import matplotlib.pyplot as plt
 
 # Üye 2'nin  yazdığın veritabanı sınıfını içe aktarıyoruz
 from database import Database
 
-class RaporEkrani(MDScreen):
+class GrafikEkrani(MDScreen):
     def _init_(self, **kwargs):
         super()._init_(**kwargs)
         # Veritabanı nesnesini başlatıyoruz. Böylece her seferinde sqlite3.connect 
