@@ -23,10 +23,10 @@ KV_WELCOME = """
 
         # Üstteki ilerleme çizgileri
         MDBoxLayout:
-            size_hint_y: None
-            height: "4dp"
-            spacing: "10dp"
-            padding: ["20dp", "20dp", "20dp", 0]
+            size_hint_y: 0.8
+            height: "1dp"
+            spacing: "1dp"
+            padding: ["1dp", "2dp", "1dp", 0]
             MDBoxLayout:
                 md_bg_color: 0.42, 0, 0.95, 1
             MDBoxLayout:
