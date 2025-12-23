@@ -4,7 +4,7 @@ from kivy.clock import Clock
 from kivymd.uix.button import MDFillRoundFlatButton
 
 KV_WELCOME = """
-<FirstSplashScreen>:
+<giris_ekrani1>:
     MDBoxLayout:
         orientation: "vertical"
         md_bg_color: 1, 1, 1, 1
@@ -14,7 +14,7 @@ KV_WELCOME = """
             size: "250dp", "250dp"
             pos_hint: {"center_x": 0.5, "center_y": 0.5}
 
-<WelcomeScreen>:
+<giris_ekrani2>:
     MDBoxLayout:
         orientation: "vertical"
         md_bg_color: 1, 1, 1, 1
