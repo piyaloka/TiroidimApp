@@ -70,7 +70,7 @@ KV_WELCOME = """
             size_hint_y: 0.1
 """
 
-class FirstSplashScreen(Screen):
+class giris_ekrani1(Screen):
     def on_enter(self, *args):
         # 3 saniye sonra WelcomeScreen'e (yazılı ekran) geç
         Clock.schedule_once(self.go_to_welcome, 3)
@@ -78,7 +78,7 @@ class FirstSplashScreen(Screen):
     def go_to_welcome(self, dt):
         self.manager.current = "welcome_text"
 
-class WelcomeScreen(Screen):
+class giris_ekrani2(Screen):
     pass
 
 # Tasarımı tek seferde yüklüyoruz
