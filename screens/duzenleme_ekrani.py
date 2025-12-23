@@ -1,6 +1,6 @@
 from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
-from onboardingpage import user_profile
+from profil_ekrani import user_profile
 
 class ProfileEditScreen(Screen):
     def on_enter(self):
