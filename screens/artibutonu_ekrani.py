@@ -1,33 +1,31 @@
 from kivymd.uix.screen import MDScreen
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
-from database import Database # Veritabanı sınıfını dahil ediyoruz
+from database import Database  # database.py dosyasını içe aktar
 from datetime import datetime
 
 class ArtiButonuEkrani(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.db = Database() # Veritabanı nesnesi oluşturuluyor
+        self.db = Database() # Veritabanı sınıfını başlat
         
         layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
         
-        # Örnek bir ilaç ID'si (Normalde bu seçimden gelmeli)
-        self.current_ilac_id = 1 
-
-        # ALDIM BUTONU
+        # Görevin: "Aldım" Butonu
         self.btn_aldim = Button(
             text="Aldım",
             size_hint=(None, None),
-            size=(200, 50),
-            pos_hint={'center_x': 0.5}
+            size=(200, 60),
+            pos_hint={'center_x': 0.5},
+            background_normal='' # Renk değişimi için gerekli
         )
-        self.btn_aldim.bind(on_release=self.aldim_islemi)
+        self.btn_aldim.bind(on_release=self.aldim_islemi) # on_release olayı
         
-        # ATLADIM BUTONU
+        # Görevin: "Atladım" Butonu
         self.btn_atladim = Button(
             text="Atladım",
             size_hint=(None, None),
-            size=(200, 50),
+            size=(200, 60),
             pos_hint={'center_x': 0.5},
             background_color=(0.7, 0.7, 0.7, 1) # Gri
         )
@@ -38,21 +36,17 @@ class ArtiButonuEkrani(MDScreen):
         self.add_widget(layout)
 
     def aldim_islemi(self, instance):
-        # 1. Buton Rengini Mor Yap (Görsel Görev)
-        instance.background_color = (0.5, 0, 0.5, 1) # Mor renk
+        # 1. Butonu Mor Yap
+        instance.background_color = (0.5, 0, 0.5, 1) 
         
-        # 2. Veritabanına Kaydet (Veri Görevi)
+        # 2. Veritabanına "ALINDI" bilgisini işle
         bugun = datetime.now().strftime('%Y-%m-%d')
-        # numaralı satırdaki ilac_logla fonksiyonunu kullanıyoruz
-        self.db.ilac_logla(ilac_id=self.current_ilac_id, tarih=bugun, durum="ALINDI")
-        
-        print(f"{bugun} tarihi için 'ALINDI' kaydı yapıldı ve buton mor oldu.")
+        # Örnek ilac_id: 1 (Normalde seçilen ilaçtan gelir)
+        self.db.ilac_logla(1, bugun, "ALINDI") 
+        print(f"{bugun} tarihi için ilaç alındı olarak kaydedildi.")
 
     def atladim_islemi(self, instance):
-        # Atladım işlemi için kayıt
+        # Atladım kaydı yap
         bugun = datetime.now().strftime('%Y-%m-%d')
-        self.db.ilac_logla(ilac_id=self.current_ilac_id, tarih=bugun, durum="ATLADI")
-        
-        # Aldım butonunu eski haline getirebilir veya bu butonu kırmızı yapabilirsin
-        self.btn_aldim.background_color = (1, 1, 1, 1) # Beyaz/Varsayılan
-        print("İlaç atlandı olarak işaretlendi.")
+        self.db.ilac_logla(1, bugun, "ATLADI")
+        print("İlaç atlandı.")
