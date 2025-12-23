@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime
 
+
 class Database:
     def __init__(self):
         # Yerel SQLite veritabanı dosyasının adını belirliyoruz. [cite: 4]
@@ -14,7 +15,7 @@ class Database:
     def baglanti_ac(self):
         """Veritabanına güvenli bir bağlantı açar ve ilişkileri aktif eder."""
         conn = sqlite3.connect(self.db_name)
-        # PRAGMA: Tablolar arası bağlantıları (ilişkileri) aktif eder. 
+        # PRAGMA: Tablolar arası bağlantıları (ilişkileri) aktif eder.
         # Bir ilaç silindiğinde ona ait eski kayıtların da otomatik silinmesini (CASCADE) sağlar.
         conn.execute("PRAGMA foreign_keys = ON")
         return conn
@@ -23,7 +24,7 @@ class Database:
         """Teknik şartnamede belirtilen tüm tabloları oluşturur. """
         conn = self.baglanti_ac()
         cursor = conn.cursor()
-            
+
         # 1. KULLANICI PROFİLİ: Onboarding ekranındaki bilgileri tutar. [cite: 33]
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS kullanici (
@@ -90,8 +91,10 @@ class Database:
         """)
 
         # 7. MASTER SEMPTOM VE DUYGU TÜRLERİ: Seçmeli listelerin kaynak tabloları.
-        cursor.execute("CREATE TABLE IF NOT EXISTS semptom_turleri (id INTEGER PRIMARY KEY AUTOINCREMENT, ad TEXT UNIQUE)")
-        cursor.execute("CREATE TABLE IF NOT EXISTS duygu_turleri (id INTEGER PRIMARY KEY AUTOINCREMENT, ad TEXT UNIQUE)")
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS semptom_turleri (id INTEGER PRIMARY KEY AUTOINCREMENT, ad TEXT UNIQUE)")
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS duygu_turleri (id INTEGER PRIMARY KEY AUTOINCREMENT, ad TEXT UNIQUE)")
 
         conn.commit()
         conn.close()
@@ -102,34 +105,40 @@ class Database:
         """Piyasadaki ilaçları otomatik yükleyerek kullanıcı hatasını önler. [cite: 20]"""
         ilaclar = [
             ("Euthyrox", "25mcg"), ("Euthyrox", "50mcg"), ("Euthyrox", "100mcg"),
-            ("Levotiron", "25mcg"), ("Levotiron", "75mcg"), ("Levotiron", "100mcg"),
+            ("Levotiron", "25mcg"), ("Levotiron",
+                                     "75mcg"), ("Levotiron", "100mcg"),
             ("Tiromel", "25mcg"), ("Tefor", "100mcg")
         ]
         conn = self.baglanti_ac()
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM master_ilaclar")
         if cursor.fetchone()[0] == 0:
-            cursor.executemany("INSERT INTO master_ilaclar (ilac_adi, varsayilan_doz) VALUES (?, ?)", ilaclar)
+            cursor.executemany(
+                "INSERT INTO master_ilaclar (ilac_adi, varsayilan_doz) VALUES (?, ?)", ilaclar)
         conn.commit()
         conn.close()
 
     def varsayilan_semptomlari_yukle(self):
         """Dashboard'daki semptom seçeneklerini hazırlar."""
-        semptomlar = ["Yorgunluk", "Kilo Değişimi", "Saç Dökülmesi", "Çarpıntı", "Unutkanlık", "Sinirlilik"]
+        semptomlar = ["Yorgunluk", "Kilo Değişimi",
+                      "Saç Dökülmesi", "Çarpıntı", "Unutkanlık", "Sinirlilik"]
         conn = self.baglanti_ac()
         cursor = conn.cursor()
         for s in semptomlar:
-            cursor.execute("INSERT OR IGNORE INTO semptom_turleri (ad) VALUES (?)", (s,))
+            cursor.execute(
+                "INSERT OR IGNORE INTO semptom_turleri (ad) VALUES (?)", (s,))
         conn.commit()
         conn.close()
 
     def varsayilan_duygulari_yukle(self):
         """Dashboard'daki duygu durum seçeneklerini hazırlar."""
-        duygular = ["Mutlu", "Yorgun", "Sinirli", "Sakin", "Enerjik", "Depresif"]
+        duygular = ["Mutlu", "Yorgun", "Sinirli",
+                    "Sakin", "Enerjik", "Depresif"]
         conn = self.baglanti_ac()
         cursor = conn.cursor()
         for d in duygular:
-            cursor.execute("INSERT OR IGNORE INTO duygu_turleri (ad) VALUES (?)", (d,))
+            cursor.execute(
+                "INSERT OR IGNORE INTO duygu_turleri (ad) VALUES (?)", (d,))
         conn.commit()
         conn.close()
 
@@ -148,7 +157,8 @@ class Database:
         """Üye 7 için: İlaç ekleme dropdown menüsünü doldurur. [cite: 55]"""
         conn = self.baglanti_ac()
         cursor = conn.cursor()
-        cursor.execute("SELECT ilac_adi || ' - ' || varsayilan_doz FROM master_ilaclar")
+        cursor.execute(
+            "SELECT ilac_adi || ' - ' || varsayilan_doz FROM master_ilaclar")
         liste = [r[0] for r in cursor.fetchall()]
         conn.close()
         return liste
@@ -157,7 +167,8 @@ class Database:
         """Üye 7 için: Seçilen ilacı kullanıcının listesine kaydeder. [cite: 50, 54]"""
         conn = self.baglanti_ac()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO kullanici_ilaclari (ilac_adi, doz, saat, periyot) VALUES (?, ?, ?, ?)", (ad, doz, saat, periyot))
+        cursor.execute(
+            "INSERT INTO kullanici_ilaclari (ilac_adi, doz, saat, periyot) VALUES (?, ?, ?, ?)", (ad, doz, saat, periyot))
         conn.commit()
         conn.close()
 
@@ -166,7 +177,8 @@ class Database:
         conn = self.baglanti_ac()
         cursor = conn.cursor()
         # INSERT OR REPLACE: Aynı gün için birden fazla kayıt oluşmasını önler.
-        cursor.execute("INSERT OR REPLACE INTO gunluk_log (ilac_id, tarih, durum) VALUES (?, ?, ?)", (ilac_id, tarih, durum))
+        cursor.execute(
+            "INSERT OR REPLACE INTO gunluk_log (ilac_id, tarih, durum) VALUES (?, ?, ?)", (ilac_id, tarih, durum))
         conn.commit()
         conn.close()
 
@@ -174,7 +186,8 @@ class Database:
         """Üye 7 için: Tahlil verilerini sisteme işler. [cite: 56]"""
         conn = self.baglanti_ac()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO tahlil_sonuclari (tsh, t3, t4, tarih) VALUES (?, ?, ?, ?)", (tsh, t3, t4, tarih))
+        cursor.execute(
+            "INSERT INTO tahlil_sonuclari (tsh, t3, t4, tarih) VALUES (?, ?, ?, ?)", (tsh, t3, t4, tarih))
         conn.commit()
         conn.close()
 
@@ -182,7 +195,8 @@ class Database:
         """Üye 8 için: İlacı ayarlar sayfasından siler. [cite: 62]"""
         conn = self.baglanti_ac()
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM kullanici_ilaclari WHERE id = ?", (ilac_id,))
+        cursor.execute(
+            "DELETE FROM kullanici_ilaclari WHERE id = ?", (ilac_id,))
         conn.commit()
         conn.close()
 
@@ -201,104 +215,108 @@ class Database:
         conn = self.baglanti_ac()
         cursor = conn.cursor()
         # Tarih UNIQUE olduğu için kullanıcının aynı gün yaptığı güncellemeyi kaydeder.
-        cursor.execute("INSERT OR REPLACE INTO gunluk_durum (tarih, duygu_durum, semptomlar) VALUES (?, ?, ?)", (tarih, duygu, semptomlar_str))
+        cursor.execute("INSERT OR REPLACE INTO gunluk_durum (tarih, duygu_durum, semptomlar) VALUES (?, ?, ?)",
+                       (tarih, duygu, semptomlar_str))
         conn.commit()
         conn.close()
-   def kullanici_ilaclarini_getir(self):
-    """Dashboard ve Takvim için: Kullanıcının ilaç listesini saat sırasıyla getirir."""
-    conn = self.baglanti_ac()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, ilac_adi, doz, saat, periyot FROM kullanici_ilaclari ORDER BY saat ASC")
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
-       def gunluk_loglari_getir(self, tarih):
-    """Takvim ikonu ve kartlar için: O günün ALINDI/ATLADI kayıtlarını getirir."""
-    conn = self.baglanti_ac()
-    cursor = conn.cursor()
-    cursor.execute("SELECT ilac_id, durum FROM gunluk_log WHERE tarih = ?", (tarih,))
-    rows = cursor.fetchall()
-    conn.close()
+
+    def kullanici_ilaclarini_getir(self):
+        """Dashboard ve Takvim için: Kullanıcının ilaç listesini saat sırasıyla getirir."""
+        conn = self.baglanti_ac()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, ilac_adi, doz, saat, periyot FROM kullanici_ilaclari ORDER BY saat ASC")
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
+
+    def gunluk_loglari_getir(self, tarih):
+        """Takvim ikonu ve kartlar için: O günün ALINDI/ATLADI kayıtlarını getirir."""
+        conn = self.baglanti_ac()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT ilac_id, durum FROM gunluk_log WHERE tarih = ?", (tarih,))
+        rows = cursor.fetchall()
+        conn.close()
 
     # kolay erişim için dict: {ilac_id: "ALINDI" / "ATLADI"}
-    return {r[0]: r[1] for r in rows}
+        return {r[0]: r[1] for r in rows}
 
-        def gun_ikonunu_hesapla(self, tarih):
-    """
-    ✅ Hepsi ALINDI
-    ❌ Hepsi ATLADI (ya da hiç ALINDI yok)
-    ⚠️ Karışık (bazısı alındı bazısı atlandı / eksik)
-    ➖ O gün için ilaç yok
-    """
-    ilaclar = self.kullanici_ilaclarini_getir()
-    if not ilaclar:
-        return {"status": "NO_PLAN", "icon": "➖", "text": "İlaç planı yok"}
+    def gun_ikonunu_hesapla(self, tarih):
+        """
+        ✅ Hepsi ALINDI
+        ❌ Hepsi ATLADI (ya da hiç ALINDI yok)
+        ⚠️ Karışık (bazısı alındı bazısı atlandı / eksik)
+        ➖ O gün için ilaç yok
+        """
+        ilaclar = self.kullanici_ilaclarini_getir()
+        if not ilaclar:
+            return {"status": "NO_PLAN", "icon": "➖", "text": "İlaç planı yok"}
 
-    log_map = self.gunluk_loglari_getir(tarih)
+        log_map = self.gunluk_loglari_getir(tarih)
 
-    toplam = len(ilaclar)
-    alindi = 0
-    atlandi = 0
-    kayitsiz = 0
+        toplam = len(ilaclar)
+        alindi = 0
+        atlandi = 0
+        kayitsiz = 0
 
-    for ilac in ilaclar:
-        ilac_id = ilac[0]
-        durum = log_map.get(ilac_id)
+        for ilac in ilaclar:
+            ilac_id = ilac[0]
+            durum = log_map.get(ilac_id)
 
-        if durum == "ALINDI":
-            alindi += 1
-        elif durum == "ATLADI":
-            atlandi += 1
-        else:
-            kayitsiz += 1  # o ilaç için o gün hiç seçim yapılmamış
+            if durum == "ALINDI":
+                alindi += 1
+            elif durum == "ATLADI":
+                atlandi += 1
+            else:
+                kayitsiz += 1  # o ilaç için o gün hiç seçim yapılmamış
 
-    # Karar:
-    if alindi == toplam:
-        return {"status": "ALL_TAKEN", "icon": "✅", "text": "Tüm ilaçlar alındı"}
-    if alindi == 0 and (atlandi > 0 or kayitsiz > 0):
-        return {"status": "NONE_TAKEN", "icon": "❌", "text": "İlaçlar alınmadı"}
-    return {"status": "PARTIAL", "icon": "⚠️", "text": f"{alindi}/{toplam} alındı"}
+        # Karar:
+        if alindi == toplam:
+            return {"status": "ALL_TAKEN", "icon": "✅", "text": "Tüm ilaçlar alındı"}
+        if alindi == 0 and (atlandi > 0 or kayitsiz > 0):
+            return {"status": "NONE_TAKEN", "icon": "❌", "text": "İlaçlar alınmadı"}
+        return {"status": "PARTIAL", "icon": "⚠️", "text": f"{alindi}/{toplam} alındı"}
 
-def dashboard_kartlarini_getir(self, tarih):
-    """
-    Dashboard ekranı kartları:
-    - saat, ilaç adı, doz
-    - taken: True/False/None (None: daha seçilmemiş)
-    """
-    ilaclar = self.kullanici_ilaclarini_getir()
-    log_map = self.gunluk_loglari_getir(tarih)
+    def dashboard_kartlarini_getir(self, tarih):
+        """
+        Dashboard ekranı kartları:
+        - saat, ilaç adı, doz
+        - taken: True/False/None (None: daha seçilmemiş)
+        """
+        ilaclar = self.kullanici_ilaclarini_getir()
+        log_map = self.gunluk_loglari_getir(tarih)
 
-    kartlar = []
-    for ilac in ilaclar:
-        ilac_id, ad, doz, saat, periyot = ilac
-        durum = log_map.get(ilac_id)
+        kartlar = []
+        for ilac in ilaclar:
+            ilac_id, ad, doz, saat, periyot = ilac
+            durum = log_map.get(ilac_id)
 
-        if durum == "ALINDI":
-            taken = True
-        elif durum == "ATLADI":
-            taken = False
-        else:
-            taken = None  # hiç seçim yapılmamış
+            if durum == "ALINDI":
+                taken = True
+            elif durum == "ATLADI":
+                taken = False
+            else:
+                taken = None  # hiç seçim yapılmamış
 
-        kartlar.append({
-            "ilac_id": ilac_id,
-            "ilac_adi": ad,
-            "doz": doz,
-            "saat": saat,
-            "periyot": periyot,
-            "taken": taken
-        })
+            kartlar.append({
+                "ilac_id": ilac_id,
+                "ilac_adi": ad,
+                "doz": doz,
+                "saat": saat,
+                "periyot": periyot,
+                "taken": taken
+            })
 
-    return kartlar
+        return kartlar
 
 
 if __name__ == "__main__":
-    print("Veritabanı sistemi başlatılıyor...") 
-    
+    print("Veritabanı sistemi başlatılıyor...")
+
     # Bu satır Database sınıfından bir 'nesne' oluşturur.
     # Bu yapıldığı anda __init__ fonksiyonu çalışır ve db dosyası klasöründe belirir.
-    db = Database() 
-    
-    print("✅ Başarılı! 'tiroid_takip.db' dosyası oluşturuldu.")
-    print("✅ Tablolar kuruldu ve Master Data yüklendi.")
-        
+    db = Database()
+
+    print(" Basarili! 'tiroid_takip.db' dosyasi olusturuldu.")
+    print(" Tablolar kuruldu ve Master Data yuklendi.")
