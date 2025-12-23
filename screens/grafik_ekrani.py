@@ -6,14 +6,13 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 import matplotlib.pyplot as plt
 
-# Üye 2'nin (Senin) yazdığın veritabanı sınıfını içe aktarıyoruz
+# Üye 2'nin  yazdığın veritabanı sınıfını içe aktarıyoruz
 from database import Database
 
 class RaporEkrani(MDScreen):
     def _init_(self, **kwargs):
         super()._init_(**kwargs)
         # Veritabanı nesnesini başlatıyoruz. Böylece her seferinde sqlite3.connect 
-        # yazmak yerine senin hazırladığın güvenli yapıyı kullanıyoruz.
         self.db = Database()
 
     def on_enter(self):
@@ -23,7 +22,7 @@ class RaporEkrani(MDScreen):
         self.ciz_grafik()
 
     def ciz_grafik(self):
-        # Üye 2'nin hazırladığı profesyonel fonksiyonu çağırıyoruz.
+        # Üye 2'nin hazırladığı fonksiyonu çağırıyoruz.
         # Bu fonksiyon verileri (id, tsh, t3, t4, tarih) sırasıyla ve tarihe göre sıralı döner.
         veriler = self.db.get_lab_history()
 
@@ -62,3 +61,4 @@ class RaporEkrani(MDScreen):
 
         # Oluşturduğumuz bu grafik kutusunu ana ekrana ekliyoruz
         self.add_widget(kutu)
+
