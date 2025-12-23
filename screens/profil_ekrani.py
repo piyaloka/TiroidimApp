@@ -26,10 +26,10 @@ KV_ONBOARDING = """
 
         # Üst İlerleme Çizgileri
         MDBoxLayout:
-            size_hint_y: None
-            height: "4dp"
-            spacing: "10dp"
-            padding: ["10dp", "20dp", "10dp", 0]
+            size_hint_y: 0.8
+            height: "1dp"
+            spacing: "1dp"
+            padding: ["1dp", "2dp", "1dp", 0]
             MDBoxLayout:
                 md_bg_color: 0.67, 0.85, 0.28, 1
             MDBoxLayout:
