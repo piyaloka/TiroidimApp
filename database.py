@@ -58,14 +58,15 @@ class Database:
 
         # 4. GÜNLÜK İLAÇ LOGLARI: Takvimin ✅, ❌ veya ⚠️ ikonlarını belirleyen kayıtlar. [cite: 19, 26, 27]
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS gunluk_log (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ilac_id INTEGER,
-                tarih TEXT,
-                durum TEXT, -- 'ALINDI' veya 'ATLADI'
-                FOREIGN KEY(ilac_id) REFERENCES kullanici_ilaclari(id) ON DELETE CASCADE
-            )
-        """)
+    CREATE TABLE IF NOT EXISTS gunluk_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ilac_id INTEGER NOT NULL,
+        tarih TEXT NOT NULL,
+        durum TEXT NOT NULL, -- 'ALINDI' veya 'ATLADI'
+        FOREIGN KEY(ilac_id) REFERENCES kullanici_ilaclari(id) ON DELETE CASCADE,
+        UNIQUE(ilac_id, tarih)
+    )
+""")
 
         # 5. TAHLİL SONUÇLARI: Kullanıcının girdiği TSH, T3, T4 değerleri (Silinemez!). [cite: 19, 56, 66]
         cursor.execute("""
@@ -203,7 +204,94 @@ class Database:
         cursor.execute("INSERT OR REPLACE INTO gunluk_durum (tarih, duygu_durum, semptomlar) VALUES (?, ?, ?)", (tarih, duygu, semptomlar_str))
         conn.commit()
         conn.close()
-        
+   def kullanici_ilaclarini_getir(self):
+    """Dashboard ve Takvim için: Kullanıcının ilaç listesini saat sırasıyla getirir."""
+    conn = self.baglanti_ac()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, ilac_adi, doz, saat, periyot FROM kullanici_ilaclari ORDER BY saat ASC")
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+       def gunluk_loglari_getir(self, tarih):
+    """Takvim ikonu ve kartlar için: O günün ALINDI/ATLADI kayıtlarını getirir."""
+    conn = self.baglanti_ac()
+    cursor = conn.cursor()
+    cursor.execute("SELECT ilac_id, durum FROM gunluk_log WHERE tarih = ?", (tarih,))
+    rows = cursor.fetchall()
+    conn.close()
+
+    # kolay erişim için dict: {ilac_id: "ALINDI" / "ATLADI"}
+    return {r[0]: r[1] for r in rows}
+
+        def gun_ikonunu_hesapla(self, tarih):
+    """
+    ✅ Hepsi ALINDI
+    ❌ Hepsi ATLADI (ya da hiç ALINDI yok)
+    ⚠️ Karışık (bazısı alındı bazısı atlandı / eksik)
+    ➖ O gün için ilaç yok
+    """
+    ilaclar = self.kullanici_ilaclarini_getir()
+    if not ilaclar:
+        return {"status": "NO_PLAN", "icon": "➖", "text": "İlaç planı yok"}
+
+    log_map = self.gunluk_loglari_getir(tarih)
+
+    toplam = len(ilaclar)
+    alindi = 0
+    atlandi = 0
+    kayitsiz = 0
+
+    for ilac in ilaclar:
+        ilac_id = ilac[0]
+        durum = log_map.get(ilac_id)
+
+        if durum == "ALINDI":
+            alindi += 1
+        elif durum == "ATLADI":
+            atlandi += 1
+        else:
+            kayitsiz += 1  # o ilaç için o gün hiç seçim yapılmamış
+
+    # Karar:
+    if alindi == toplam:
+        return {"status": "ALL_TAKEN", "icon": "✅", "text": "Tüm ilaçlar alındı"}
+    if alindi == 0 and (atlandi > 0 or kayitsiz > 0):
+        return {"status": "NONE_TAKEN", "icon": "❌", "text": "İlaçlar alınmadı"}
+    return {"status": "PARTIAL", "icon": "⚠️", "text": f"{alindi}/{toplam} alındı"}
+
+def dashboard_kartlarini_getir(self, tarih):
+    """
+    Dashboard ekranı kartları:
+    - saat, ilaç adı, doz
+    - taken: True/False/None (None: daha seçilmemiş)
+    """
+    ilaclar = self.kullanici_ilaclarini_getir()
+    log_map = self.gunluk_loglari_getir(tarih)
+
+    kartlar = []
+    for ilac in ilaclar:
+        ilac_id, ad, doz, saat, periyot = ilac
+        durum = log_map.get(ilac_id)
+
+        if durum == "ALINDI":
+            taken = True
+        elif durum == "ATLADI":
+            taken = False
+        else:
+            taken = None  # hiç seçim yapılmamış
+
+        kartlar.append({
+            "ilac_id": ilac_id,
+            "ilac_adi": ad,
+            "doz": doz,
+            "saat": saat,
+            "periyot": periyot,
+            "taken": taken
+        })
+
+    return kartlar
+
+
 if __name__ == "__main__":
     print("Veritabanı sistemi başlatılıyor...") 
     

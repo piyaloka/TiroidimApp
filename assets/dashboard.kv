@@ -1,0 +1,34 @@
+#:kivy 2.2.1
+
+<DashboardEkrani>:
+    name: "dashboard"
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(16)
+        spacing: dp(12)
+
+        # ÜST: Gün durumu (✅⚠️❌)
+        Label:
+            id: lbl_gun_durumu
+            text: "Durum yükleniyor..."
+            size_hint_y: None
+            height: dp(40)
+            font_size: "18sp"
+            bold: True
+
+        # ORTA: İlaç kartları listesi (scroll)
+        ScrollView:
+            do_scroll_x: False
+
+            BoxLayout:
+                id: ilac_listesi
+                orientation: "vertical"
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(10)
+
+        # ALT: (İstersen buraya FAB veya menü koyarsın)
+        Label:
+            text: ""
+            size_hint_y: None
+            height: dp(8)
