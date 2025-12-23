@@ -11,7 +11,7 @@ class duzenleme_ekrani(Screen):
         self.ids.user_birthday.text = f"Doğum Tarihi: {user_profile['dogum_tarihi']}"
 
 KV_PROFILE = """
-<ProfileEditScreen>:
+<duzenleme_ekrani>:
     MDBoxLayout:
         orientation: "vertical"
         md_bg_color: 1, 1, 1, 1 # Temiz beyaz arka plan
