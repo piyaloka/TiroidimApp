@@ -26,10 +26,10 @@ KV_DISEASE = """
 
         # Üst İlerleme Çubuğu (Görseldeki gibi ince ve soft)
         MDBoxLayout:
-            size_hint_y: None
-            height: "4dp"
-            spacing: "10dp"
-            padding: ["40dp", "10dp", "40dp", 0]
+            size_hint_y: 0.5
+            height: "1dp"
+            spacing: "1dp"
+            padding: ["1dp", "2dp", "1dp", 0]
             MDBoxLayout:
                 md_bg_color: 1, 0.7, 0.7, 0.5
             MDBoxLayout:
