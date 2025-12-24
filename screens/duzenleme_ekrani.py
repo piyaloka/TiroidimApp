@@ -1,4 +1,8 @@
-""" from kivy.uix.screenmanager import Screen
+""" 
+******** DUZENLEME YAPILDI *******
+
+
+from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
 from screens.profil_ekrani import user_profile
 

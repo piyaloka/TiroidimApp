@@ -59,7 +59,7 @@ KV_WELCOME = """
             pos_hint: {"center_x": 0.5}
             # Dashboard'a gönderiyoruz
             on_release: 
-                root.manager.current = "dashboard" 
+                root.manager.current = "onboarding" 
                 root.manager.transition.direction = "left"
 
         Widget:

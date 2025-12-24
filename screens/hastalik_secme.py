@@ -1,79 +1,62 @@
-from kivy.uix.screenmanager import Screen
+from kivymd.uix.screen import MDScreen
 from kivy.lang import Builder
 from kivy.properties import StringProperty
-from profil_ekrani import user_profile
+from database import Database
 
-class DiseaseScreen(Screen):
-    # Seçilen hastalığı ekranda dinamik olarak göstermek için
-    selected_name = StringProperty("Henüz seçim yapılmadı")
-
-    def select_disease(self, disease_name):
-        """Hastalığı kaydeder ve kullanıcıya görsel geri bildirim verir."""
-        user_profile["hastalik"] = disease_name
-        self.selected_name = f"Seçilen: {disease_name}"
-
-    def finish_onboarding(self):
-        """Profil özet ekranına geçiş yapar."""
-        self.manager.current = "profile_edit"
-
+# --- TASARIM KODLARI (Arkadaşının Pembe Tasarımı) ---
 KV_DISEASE = """
-<DiseaseScreen>:
+<HastalikSecmeEkrani>:
     MDBoxLayout:
         orientation: "vertical"
-        md_bg_color: 1, 0.88, 0.88, 1  # Görseldeki o yumuşak pembe arka plan
+        md_bg_color: 1, 0.95, 0.95, 1
         padding: "20dp"
         spacing: "15dp"
 
-        # Üst İlerleme Çubuğu (Görseldeki gibi ince ve soft)
+        # Üst İlerleme Çizgileri
         MDBoxLayout:
-            size_hint_y: 0.5
-            height: "1dp"
-            spacing: "1dp"
-            padding: ["1dp", "2dp", "1dp", 0]
+            size_hint_y: None
+            height: "10dp"
+            spacing: "5dp"
             MDBoxLayout:
                 md_bg_color: 1, 0.7, 0.7, 0.5
             MDBoxLayout:
                 md_bg_color: 1, 0.7, 0.7, 0.5
             MDBoxLayout:
-                md_bg_color: 1, 0.6, 0.6, 1 # Koyu Pembe Aktif
+                md_bg_color: 1, 0.6, 0.6, 1
 
-        Widget:
-            size_hint_y: 0.1
-
-        # Ana Beyaz Kart (Yumuşatılmış köşeler)
         MDCard:
             orientation: "vertical"
             md_bg_color: 1, 1, 1, 1
-            radius: [40,]
+            radius: [30,]
             padding: "30dp"
             spacing: "20dp"
-            elevation: 0
-            size_hint_y: 0.75
+            elevation: 1
+            size_hint_y: 0.85
             pos_hint: {"center_x": 0.5}
 
-            # Profil Fotoğraf Alanı (Daire içinde kamera ikonu)
+            # İkon
             MDBoxLayout:
                 size_hint: None, None
-                size: "120dp", "120dp"
+                size: "100dp", "100dp"
                 pos_hint: {"center_x": 0.5}
                 md_bg_color: 1, 0.9, 0.9, 1
-                radius: [60,]
+                radius: [50,]
                 MDIcon:
-                    icon: "camera"
+                    icon: "medical-bag"
                     halign: "center"
-                    font_size: "40sp"
+                    font_size: "50sp"
                     theme_text_color: "Custom"
-                    text_color: 0, 0, 0, 1
+                    text_color: 0.8, 0.4, 0.4, 1
 
             MDLabel:
                 text: "Hangi tiroid hastalığına\\nsahipsiniz?"
                 halign: "center"
                 font_style: "H6"
                 bold: True
-                theme_text_color: "Custom"
-                text_color: 0.1, 0.1, 0.1, 1
+                size_hint_y: None
+                height: "60dp"
 
-            # Seçilen Hastalık Yazısı (Kırmızı Vurgu)
+            # Seçilen Hastalık Göstergesi
             MDLabel:
                 text: root.selected_name
                 halign: "center"
@@ -81,43 +64,62 @@ KV_DISEASE = """
                 theme_text_color: "Custom"
                 text_color: 0.8, 0.2, 0.2, 1
                 bold: True
+                size_hint_y: None
+                height: "20dp"
 
-            # Hastalık Seçenekleri (Sade ve Çizgili)
-            MDBoxLayout:
-                orientation: "vertical"
-                spacing: "2dp"
-                adaptive_height: True
-                
-                MDFlatButton:
-                    text: "Hipertiroidi"
-                    size_hint_x: 1
-                    font_size: "18sp"
-                    on_release: root.select_disease("Hipertiroidi")
-                
-                MDSeparator:
-                    height: "1dp"
-                    color: 0.9, 0.9, 0.9, 1
-                
-                MDFlatButton:
-                    text: "Hashimoto"
-                    size_hint_x: 1
-                    font_size: "18sp"
-                    on_release: root.select_disease("Hashimoto")
+            # Seçenekler
+            ScrollView:
+                MDBoxLayout:
+                    orientation: "vertical"
+                    adaptive_height: True
+                    spacing: "10dp"
+                    
+                    MDRectangleFlatButton:
+                        text: "Hipertiroidi"
+                        size_hint_x: 1
+                        on_release: root.hastalik_sec("Hipertiroidi")
+                    
+                    MDRectangleFlatButton:
+                        text: "Hashimoto"
+                        size_hint_x: 1
+                        on_release: root.hastalik_sec("Hashimoto")
 
-        Widget:
-            size_hint_y: 0.1
+                    MDRectangleFlatButton:
+                        text: "Emin Değilim"
+                        size_hint_x: 1
+                        on_release: root.hastalik_sec("Belirsiz")
 
-        # KAYDI TAMAMLA Butonu (Görseldeki pembe buton)
-        MDFillRoundFlatButton:
-            text: "KAYDI TAMAMLA"
-            font_size: "18sp"
-            md_bg_color: 1, 0.7, 0.7, 1
-            text_color: 1, 1, 1, 1
-            size_hint_x: 0.9
-            pos_hint: {"center_x": 0.5}
-            on_release: root.finish_onboarding()
-
-        Widget:
-            size_hint_y: 0.05
+            MDFillRoundFlatButton:
+                text: "KAYDI TAMAMLA"
+                font_size: "18sp"
+                md_bg_color: 1, 0.7, 0.7, 1
+                text_color: 1, 1, 1, 1
+                size_hint_x: 1
+                on_release: root.kaydi_bitir()
 """
+
 Builder.load_string(KV_DISEASE)
+
+# --- İŞTE DÜZELTİLMİŞ SINIF İSMİ: HastalikSecmeEkrani ---
+class HastalikSecmeEkrani(MDScreen):
+    selected_name = StringProperty("Henüz seçim yapılmadı")
+    secilen_kod = "Belirsiz"
+
+    def hastalik_sec(self, isim):
+        self.selected_name = f"Seçilen: {isim}"
+        self.secilen_kod = isim
+
+    def kaydi_bitir(self):
+        # Veritabanına güncelleme
+        try:
+            db = Database()
+            conn = db.baglanti_ac()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE kullanici SET tiroid_tipi = ? WHERE id = (SELECT MAX(id) FROM kullanici)", (self.secilen_kod,))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Hastalık kayıt hatası: {e}")
+
+        # Dashboard'a geç
+        self.manager.current = "dashboard"

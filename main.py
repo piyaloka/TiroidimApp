@@ -15,6 +15,8 @@ from screens.takvim_ekrani import TakvimEkrani
 from screens.grafik_ekrani import GrafikEkrani
 from screens.artibutonu_ekrani import ArtiButonuEkrani
 from screens.duzenleme_ekrani import DuzenlemeEkrani
+from screens.onboarding_ekrani import OnboardingEkrani
+from screens.hastalik_secme import HastalikSecmeEkrani
 
 
 # Telefon boyutu
@@ -38,6 +40,9 @@ class TiroidimApp(MDApp):
         yonetici.add_widget(GrafikEkrani(name="grafik"))
         yonetici.add_widget(ArtiButonuEkrani(name="arti_butonu"))
         yonetici.add_widget(DuzenlemeEkrani(name="duzenleme"))
+        yonetici.add_widget(OnboardingEkrani(name="onboarding"))
+        yonetici.add_widget(HastalikSecmeEkrani(name="hastalik_secme"))
+        
 
         # İlk açılacak ekran
         yonetici.current = "giris"

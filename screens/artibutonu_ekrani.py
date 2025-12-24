@@ -1,4 +1,8 @@
 """ 
+ 
+******** DUZENLEME YAPILDI *******
+
+
 from kivymd.uix.screen import MDScreen
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
