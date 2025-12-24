@@ -10,19 +10,19 @@ KV_ONBOARDING = """
         padding: "20dp"
         spacing: "10dp"
 
-        # --- ÜST İLERLEME ÇİZGİLERİ (DÜZELTİLDİ) ---
-        # Şu an 2. Adımdayız: 1. Soluk, 2. Koyu, 3. Soluk olmalı.
+        # ÜST İLERLEME ÇİZGİLERİ
+        
         MDBoxLayout:
             size_hint_y: None
             height: "10dp"
             spacing: "5dp"
-            # 1. Çizgi (Geçildi - Soluk)
+            # 1. Çizgi 
             MDBoxLayout:
                 md_bg_color: 0.67, 0.85, 0.28, 0.3
-            # 2. Çizgi (AKTİF - Koyu)
+            # 2. Çizgi 
             MDBoxLayout:
                 md_bg_color: 0.67, 0.85, 0.28, 1
-            # 3. Çizgi (Bekliyor - Soluk)
+            # 3. Çizgi
             MDBoxLayout:
                 md_bg_color: 0.67, 0.85, 0.28, 0.3
 
@@ -35,7 +35,7 @@ KV_ONBOARDING = """
             theme_text_color: "Custom"
             text_color: 0, 0, 0, 1
 
-        # --- FOTOĞRAF VE İSİM ALANI ---
+        # FOTOĞRAF VE İSİM ALAN
         MDBoxLayout:
             orientation: "horizontal"
             size_hint_y: None
@@ -75,14 +75,14 @@ KV_ONBOARDING = """
                     mode: "round"
                     fill_color_normal: 0.88, 0.94, 0.75, 0.5
 
-        # --- DİĞER BİLGİLER (KAYDIRILABİLİR ALAN) ---
+        # DİĞER 
         ScrollView:
             MDBoxLayout:
                 orientation: "vertical"
-                # Boşluğu tekrar makul bir seviyeye çektim (15dp)
+             
                 spacing: "15dp"  
                 adaptive_height: True
-                # Alt boşluğu azalttım
+                
                 padding: [0, "10dp", 0, "20dp"] 
 
                 MDTextField:
@@ -92,7 +92,7 @@ KV_ONBOARDING = """
                     mode: "round"
                     fill_color_normal: 0.88, 0.94, 0.75, 0.5
                     size_hint_y: None
-                    height: "50dp" # Yükseklik sabitledim ki taşmasın
+                    height: "50dp" 
 
                 MDTextField:
                     id: cinsiyet
@@ -103,7 +103,7 @@ KV_ONBOARDING = """
                     size_hint_y: None
                     height: "50dp"
 
-                # --- ARADAKİ EKSTRA WIDGET'I KALDIRDIM (Fazla boşluk yapıyordu) ---
+               
 
                 MDBoxLayout:
                     orientation: "horizontal"
