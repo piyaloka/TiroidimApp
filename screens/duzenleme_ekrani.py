@@ -41,7 +41,7 @@ KV_PROFILE =
             spacing: "10dp"
             pos_hint: {"center_x": 0.5}
             radius: [25,]
-            md_bg_color: 0.88, 0.94, 0.75, 0.6  # Görseldeki açık yeşil (şeffaflık eklendi)
+            md_bg_color: 0.88, 0.94, 0.75, 0.6  
             elevation: 1
 
             # Profil Resmi Alanı(Küçük Daire)
@@ -104,7 +104,7 @@ KV_PROFILE =
                 text: "Bilgileri Güncelle"
                 size_hint_x: 0.8
                 pos_hint: {"center_x": 0.5}
-                md_bg_color: 0.67, 0.85, 0.28, 1 # Canlı Yeşil
+                md_bg_color: 0.67, 0.85, 0.28, 1 
                 on_release: root.manager.current = "onboarding"
 
             MDFlatButton:
@@ -143,7 +143,7 @@ KV_PROFILE = """
             theme_text_color: "Custom"
             text_color: 0.2, 0.2, 0.2, 1
 
-        # Modern Profil Kartı
+        # Profil Kartı
         MDCard:
             orientation: "vertical"
             size_hint: 0.95, None
