@@ -309,16 +309,8 @@ class Database:
             })
 
         return kartlar
-    def on_aldim_click(self, instance):
-    # 1. Buton Rengini Değiştir (Mor yap)
-    instance.background_color = (0.6, 0.2, 0.8, 1) # Mor tonu
     
-    # 2. Veritabanına İşle
-    veritabani_guncelle(durum="Bugün alındı", tarih="2025-12-23")
-    
-    # 3. Takvimi Güncelle (Yeşil Tik koy)
-    self.parent.takvim.gunu_isaretle(tarih="bugun", icon="green_tick.png")
-
+# Test kodu
 if __name__ == "__main__":
     print("Veritabanı sistemi başlatılıyor...")
 

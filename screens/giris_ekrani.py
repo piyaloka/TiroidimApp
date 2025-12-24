@@ -1,50 +1,43 @@
+from kivymd.uix.screen import MDScreen
 from kivy.lang import Builder
-from kivy.uix.screenmanager import Screen
 from kivy.clock import Clock
-from kivymd.uix.button import MDFillRoundFlatButton
 
+# KV Tasarımı (Görünüm)
 KV_WELCOME = """
-<giris_ekrani1>:
+<GirisEkrani>:
     MDBoxLayout:
         orientation: "vertical"
         md_bg_color: 1, 1, 1, 1
+        
         Image:
-            source: "tiroid_logo.png"
+            source: "assets/tiroid_logo.png"
             size_hint: None, None
             size: "250dp", "250dp"
             pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            allow_stretch: True
 
-<giris_ekrani2>:
+<HosgeldinEkrani>:
     MDBoxLayout:
         orientation: "vertical"
         md_bg_color: 1, 1, 1, 1
         padding: "20dp"
         spacing: "20dp"
 
-        # Üstteki ilerleme çizgileri
+        # Renkli Çizgiler
         MDBoxLayout:
-            size_hint_y: 0.8
-            height: "1dp"
-            spacing: "1dp"
-            padding: ["1dp", "2dp", "1dp", 0]
+            size_hint_y: None
+            height: "10dp"
+            spacing: "5dp"
             MDBoxLayout:
                 md_bg_color: 0.42, 0, 0.95, 1
+                size_hint_x: 0.3
             MDBoxLayout:
-                md_bg_color: 0.8, 0.7, 0.9, 1
+                md_bg_color: 0.9, 0.9, 0.9, 1
             MDBoxLayout:
-                md_bg_color: 0.8, 0.7, 0.9, 1
+                md_bg_color: 0.9, 0.9, 0.9, 1
 
         Widget:
-            size_hint_y: 0.1
-
-        Image:
-            source: "tiroid_logo.png"
-            size_hint: None, None
-            size: "100dp", "100dp"
-            pos_hint: {"center_x": 0.5}
-
-        Widget:
-            size_hint_y: 0.1
+            size_hint_y: 0.2
 
         MDLabel:
             text: "Merhaba,\\nHoş Geldin!"
@@ -64,22 +57,25 @@ KV_WELCOME = """
             text_color: 1, 1, 1, 1
             size_hint_x: 0.8
             pos_hint: {"center_x": 0.5}
-            on_release: root.manager.current = "onboarding"
+            # Dashboard'a gönderiyoruz
+            on_release: 
+                root.manager.current = "dashboard" 
+                root.manager.transition.direction = "left"
 
         Widget:
             size_hint_y: 0.1
 """
 
-class giris_ekrani1(Screen):
-    def on_enter(self, *args):
-        # 3 saniye sonra WelcomeScreen'e (yazılı ekran) geç
-        Clock.schedule_once(self.go_to_welcome, 3)
-    
-    def go_to_welcome(self, dt):
-        self.manager.current = "welcome_text"
-
-class giris_ekrani2(Screen):
-    pass
-
-# Tasarımı tek seferde yüklüyoruz
 Builder.load_string(KV_WELCOME)
+
+# Python Sınıfları (Mantık)
+class GirisEkrani(MDScreen):
+    def on_enter(self, *args):
+        # 3 saniye sonra Hoşgeldin ekranına geç
+        Clock.schedule_once(self.git_hosgeldin, 3)
+    
+    def git_hosgeldin(self, dt):
+        self.manager.current = "hosgeldin"
+
+class HosgeldinEkrani(MDScreen):
+    pass
