@@ -3,7 +3,7 @@ from kivy.lang import Builder
 from kivy.properties import StringProperty
 from database import Database
 
-# --- TASARIM KODLARI (Arkadaşının Pembe Tasarımı) ---
+#tasarım
 KV_DISEASE = """
 <HastalikSecmeEkrani>:
     MDBoxLayout:
@@ -100,7 +100,8 @@ KV_DISEASE = """
 
 Builder.load_string(KV_DISEASE)
 
-# --- İŞTE DÜZELTİLMİŞ SINIF İSMİ: HastalikSecmeEkrani ---
+# DÜZELTİLMİŞ SINIF İSMİ: HastalikSecmeEkrani 
+
 class HastalikSecmeEkrani(MDScreen):
     selected_name = StringProperty("Henüz seçim yapılmadı")
     secilen_kod = "Belirsiz"
