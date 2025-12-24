@@ -31,8 +31,7 @@ class TiroidimApp(MDApp):
         # Yöneticiyi (ScreenManager) oluşturuyoruz
         yonetici = ScreenManager()
 
-        # Ekranları yöneticiye ekliyoruz
-        # (GirisEkrani vb.) kullanıyoruz
+        # Ekranları yöneticiye ekliyoruz (GirisEkrani vb.)
         yonetici.add_widget(GirisEkrani(name="giris"))
         yonetici.add_widget(HosgeldinEkrani(name="hosgeldin"))
         yonetici.add_widget(DashboardEkrani(name="dashboard"))

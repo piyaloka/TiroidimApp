@@ -73,3 +73,4 @@ class DashboardEkrani(Screen):
         bugun = datetime.now().strftime("%Y-%m-%d")
         self.db.ilac_logla(ilac_id, bugun, durum)
         self.refresh()
+        
