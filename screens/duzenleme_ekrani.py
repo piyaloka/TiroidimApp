@@ -18,7 +18,7 @@ KV_PROFILE =
 <duzenleme_ekrani>:
     MDBoxLayout:
         orientation: "vertical"
-        md_bg_color: 1, 1, 1, 1 # Temiz beyaz arka plan
+        md_bg_color: 1, 1, 1, 1
         padding: "20dp"
         spacing: "15dp"
 
