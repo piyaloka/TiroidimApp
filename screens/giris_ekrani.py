@@ -3,7 +3,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.anchorlayout import AnchorLayout
 
-# --- GİRİŞ VE HOŞGELDİN EKRANI TASARIMI ---
+
 KV_WELCOME = """
 <GirisEkrani>:
     md_bg_color: 1, 1, 1, 1 
@@ -15,14 +15,14 @@ KV_WELCOME = """
         # Logo ve Yazıyı tutan kutu
         MDBoxLayout:
             orientation: "vertical"
-            # adaptive_size: True  <-- BUNU SİLDİK (Sorun buydu)
+         
             adaptive_height: True  # Sadece yüksekliği otomatik yap
             size_hint_x: None      # Genişliği biz belirleyeceğiz
-            width: "300dp"         # Yazının rahat sığacağı genişlik
+            width: "300dp"         # Yazının sığacağı genişlik
             spacing: "10dp"        # Logo ve yazı arası boşluk
             pos_hint: {"center_x": 0.5, "center_y": 0.55}
 
-            # --- LOGO RESMİ ---
+            #logo
             Image:
                 source: "assets/logo_mor.png"
                 size_hint: None, None
@@ -30,7 +30,7 @@ KV_WELCOME = """
                 pos_hint: {"center_x": 0.5}
                 allow_stretch: True
 
-            # --- BAŞLIK YAZISI ---
+            
             MDLabel:
                 text: "Tiroidim"
                 halign: "center"
