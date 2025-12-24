@@ -32,7 +32,7 @@ KV_PROFILE =
             theme_text_color: "Custom"
             text_color: 0.2, 0.2, 0.2, 1
 
-        # Modern Profil Kartı (Yeşil Temalı)
+        # Yeşil Tema
         MDCard:
             orientation: "vertical"
             size_hint: 0.95, None
@@ -44,7 +44,7 @@ KV_PROFILE =
             md_bg_color: 0.88, 0.94, 0.75, 0.6  # Görseldeki açık yeşil (şeffaflık eklendi)
             elevation: 1
 
-            # Profil Resmi Alanı (Küçük Daire)
+            # Profil Resmi Alanı(Küçük Daire)
             MDBoxLayout:
                 size_hint: None, None
                 size: "70dp", "70dp"
@@ -124,7 +124,7 @@ from kivymd.uix.screen import MDScreen
 from kivy.lang import Builder
 from database import Database  # Veritabanını çağırıyoruz (Köprü burası!)
 
-# --- TASARIM (Arkadaşının Tasarımı - Dokunmadım) ---
+# TASARIM
 KV_PROFILE = """
 <DuzenlemeEkrani>:
     MDBoxLayout:
