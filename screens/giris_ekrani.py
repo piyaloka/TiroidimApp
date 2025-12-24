@@ -1,20 +1,44 @@
 from kivymd.uix.screen import MDScreen
 from kivy.lang import Builder
 from kivy.clock import Clock
+from kivy.uix.anchorlayout import AnchorLayout
 
-# KV Tasarımı (Görünüm)
+# --- GİRİŞ VE HOŞGELDİN EKRANI TASARIMI ---
 KV_WELCOME = """
 <GirisEkrani>:
-    MDBoxLayout:
-        orientation: "vertical"
-        md_bg_color: 1, 1, 1, 1
-        
-        Image:
-            source: "assets/tiroid_logo.png"
-            size_hint: None, None
-            size: "250dp", "250dp"
-            pos_hint: {"center_x": 0.5, "center_y": 0.5}
-            allow_stretch: True
+    md_bg_color: 1, 1, 1, 1 
+    
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+
+        # Logo ve Yazıyı tutan kutu
+        MDBoxLayout:
+            orientation: "vertical"
+            # adaptive_size: True  <-- BUNU SİLDİK (Sorun buydu)
+            adaptive_height: True  # Sadece yüksekliği otomatik yap
+            size_hint_x: None      # Genişliği biz belirleyeceğiz
+            width: "300dp"         # Yazının rahat sığacağı genişlik
+            spacing: "10dp"        # Logo ve yazı arası boşluk
+            pos_hint: {"center_x": 0.5, "center_y": 0.55}
+
+            # --- LOGO RESMİ ---
+            Image:
+                source: "assets/logo_mor.png"
+                size_hint: None, None
+                size: "75dp", "75dp"   # Senin istediğin küçük boyut
+                pos_hint: {"center_x": 0.5}
+                allow_stretch: True
+
+            # --- BAŞLIK YAZISI ---
+            MDLabel:
+                text: "Tiroidim"
+                halign: "center"
+                font_style: "H4"
+                bold: True
+                theme_text_color: "Custom"
+                text_color: 0.42, 0, 0.95, 1
+                adaptive_height: True
 
 <HosgeldinEkrani>:
     MDBoxLayout:
@@ -23,7 +47,6 @@ KV_WELCOME = """
         padding: "20dp"
         spacing: "20dp"
 
-        # Renkli Çizgiler
         MDBoxLayout:
             size_hint_y: None
             height: "10dp"
@@ -57,7 +80,6 @@ KV_WELCOME = """
             text_color: 1, 1, 1, 1
             size_hint_x: 0.8
             pos_hint: {"center_x": 0.5}
-            # Dashboard'a gönderiyoruz
             on_release: 
                 root.manager.current = "onboarding" 
                 root.manager.transition.direction = "left"
@@ -68,10 +90,8 @@ KV_WELCOME = """
 
 Builder.load_string(KV_WELCOME)
 
-# Python Sınıfları (Mantık)
 class GirisEkrani(MDScreen):
     def on_enter(self, *args):
-        # 3 saniye sonra Hoşgeldin ekranına geç
         Clock.schedule_once(self.git_hosgeldin, 3)
     
     def git_hosgeldin(self, dt):
