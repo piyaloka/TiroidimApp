@@ -1,52 +1,103 @@
 from kivymd.uix.screen import MDScreen
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from database import Database
-from datetime import datetime
+from kivy.lang import Builder
+from kivymd.uix.gridlayout import MDGridLayout
+from kivymd.uix.button import MDFlatButton
+from kivymd.uix.card import MDCard
+from kivymd.uix.label import MDLabel
+from datetime import date
+import calendar
+
+from database import Database   # DOSYA ADINI database.py YAP
+
+db = Database()
+
+KV = """
+<TakvimEkrani>:
+    name: "takvim"
+    MDBoxLayout:
+        orientation: "vertical"
+        md_bg_color: 1,1,1,1
+
+        MDTopAppBar:
+            title: "Tedavi Uyumu"
+            elevation: 0
+            md_bg_color: 1,1,1,1
+            specific_text_color: 0.42, 0, 0.95, 1
+
+        ScrollView:
+            MDGridLayout:
+                id: calendar_grid
+                cols: 7
+                adaptive_height: True
+                padding: "10dp"
+                spacing: "5dp"
+
+        MDSeparator:
+
+        ScrollView:
+            MDBoxLayout:
+                id: ilac_listesi
+                orientation: "vertical"
+                adaptive_height: True
+                padding: "10dp"
+                spacing: "10dp"
+"""
+
+Builder.load_string(KV)
+
 
 class TakvimEkrani(MDScreen):
     def on_enter(self):
-        """Ekran her açıldığında veritabanından güncel verileri çeker."""
-        self.clear_widgets() # Ekranı temizle (üst üste binmemesi için)
-        self.db = Database()
-        self.layout = BoxLayout(orientation='vertical', padding=10)
-        
-        # Başlık
-        self.layout.add_widget(Label(text="İlaç Takip Takvimi", size_hint_y=0.1, color=(0,0,0,1)))
-        
-        # Takvim Izgarası (7 sütun - haftanın günleri için)
-        self.grid = GridLayout(cols=7, spacing=5)
-        self.takvimi_olustur()
-        
-        self.layout.add_widget(self.grid)
-        self.add_widget(self.layout)
+        self.secili_tarih = date.today()
+        self.takvimi_ciz()
+        self.gun_detayi_yukle(self.secili_tarih)
 
-    def takvimi_olustur(self):
-        bugun = datetime.now().strftime('%Y-%m-%d')
-        
-        # Veritabanından bugünün durumunu al
-        # gun_ikonunu_hesapla fonksiyonu ✅, ❌ veya ⚠️ döner
-        durum_verisi = self.db.gun_ikonunu_hesapla(bugun)
-        
-        # Örnek olarak 1'den 30'a kadar günleri çiziyoruz
-        for gun in range(1, 31):
-            gun_box = BoxLayout(orientation='vertical', size_hint_y=None, height=80)
-            
-            # Gün Numarası
-            gun_box.add_widget(Label(text=str(gun), color=(0,0,0,1)))
-            
-            # Eğer döngüdeki gün "Bugün" ise ve veritabanında "ALINDI" kaydı varsa
-            # (Basitlik olması için sadece bugüne odaklanıyoruz)
-            if gun == datetime.now().day:
-                if durum_verisi["status"] == "ALL_TAKEN":
-                    # YEŞİL TİK EKLEME
-                    # Not: assets klasöründe 'check.png' olduğunu varsayıyoruz
-                    tik_ikonu = Image(source='assets/check.png') 
-                    gun_box.add_widget(tik_ikonu)
-                else:
-                    # Alınmadıysa veya eksikse durum ikonunu metin olarak bas
-                    gun_box.add_widget(Label(text=durum_verisi["icon"], font_name="Arial"))
-            
-            self.grid.add_widget(gun_box)
+    def takvimi_ciz(self):
+        self.ids.calendar_grid.clear_widgets()
+
+        today = date.today()
+        yil, ay = today.year, today.month
+        gun_sayisi = calendar.monthrange(yil, ay)[1]
+
+        for gun in range(1, gun_sayisi + 1):
+            tarih = date(yil, ay, gun)
+            ikon = db.gun_ikonunu_hesapla(str(tarih))["icon"]
+
+            btn = MDFlatButton(
+                text=f"{gun}\n{ikon}",
+                on_release=lambda x, t=tarih: self.gun_sec(t)
+            )
+            self.ids.calendar_grid.add_widget(btn)
+
+    def gun_sec(self, tarih):
+        self.secili_tarih = tarih
+        self.gun_detayi_yukle(tarih)
+
+    def gun_detayi_yukle(self, tarih):
+        self.ids.ilac_listesi.clear_widgets()
+        kartlar = db.dashboard_kartlarini_getir(str(tarih))
+
+        for k in kartlar:
+            durum = "—"
+            if k["taken"] is True:
+                durum = "✅"
+            elif k["taken"] is False:
+                durum = "❌"
+
+            card = MDCard(
+                size_hint_y=None,
+                height="70dp",
+                radius=[16],
+                md_bg_color=(0.95, 0.95, 0.95, 1),
+                padding="10dp"
+            )
+
+            card.add_widget(
+                MDLabel(
+                    text=f"{k['saat']}  {k['ilac_adi']} {k['doz']}   {durum}",
+                    halign="left"
+                )
+            )
+
+            self.ids.ilac_listesi.add_widget(card)
+
