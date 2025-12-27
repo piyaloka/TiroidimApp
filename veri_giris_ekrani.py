@@ -1,136 +1,145 @@
+from kivy.lang import Builder
+from kivy.animation import Animation
 from kivymd.app import MDApp
-from kivymd.uix.button import MDFloatingActionButton, MDRaisedButton
-from kivymd.uix.screen import MDScreen
-from kivymd.uix.boxlayout import BoxLayout
-from kivymd.uix.dialog import MDDialog
-from kivymd.uix.textfield import MDTextField
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivymd.uix.menu import MDDropdownMenu
 
+KV = '''
+MDScreen:
+    md_bg_color: 1, 1, 1, 1
 
-# =========================
-# YENİ SAYFA: İLAÇ EKLE
-# =========================
-class AddDrugScreen(MDScreen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.md_bg_color = (1, 1, 1, 1)  # Beyaz arka plan
+    MDCard:
+        id: form_page
+        pos_hint: {"center_x": 0.5, "center_y": -1} 
+        size_hint: 0.95, 0.8
+        radius: [30, 30, 30, 30]
+        elevation: 12
+        padding: "20dp"
+        orientation: 'vertical'
 
-        layout = BoxLayout(
-            orientation="vertical",
-            padding=30,
-            spacing=20
-        )
+    MDLabel:
+            id: form_title
+            text: "Ekle"
+            halign: "center"
+            bold: True
+            font_style: "H6"
+            size_hint_y: None
+            height: "40dp"
 
-        self.drug_name = MDTextField(
-            hint_text="İlaç Adı",
-            mode="rectangle"
-        )
+    MDBoxLayout:
+            orientation: 'vertical'
+            spacing: "15dp"
+            padding: [0, "10dp"]
 
-        self.dosage = MDTextField(
-            hint_text="Dozaj (örn: 500 mg)",
-            mode="rectangle"
-        )
+            MDBoxLayout:
+                id: ilac_fields
+                orientation: 'vertical'
+                size_hint_y: None
+                height: 0
+                opacity: 0
+                MDTextField:
+                    hint_text: "İlaç Adı"
+                MDTextField:
+                    hint_text: "Dozaj (mg/ml)"
+                MDTextField:
+                    hint_text: "Kullanım Sıklığı"
 
-        self.frequency = MDTextField(
-            hint_text="Kullanım Sıklığı (örn: Günde 2 kez)",
-            mode="rectangle"
-        )
+            MDBoxLayout:
+                id: alarm_fields
+                orientation: 'vertical'
+                size_hint_y: None
+                height: 0
+                opacity: 0
+                spacing: "10dp"
+                
+                MDLabel:
+                    text: "Kullanım Zamanı:"
+                    theme_text_color: "Secondary"
+                    font_style: "Caption"
+                
+                MDDropDownItem:
+                    id: drop_item
+                    text: "Sabah / Aç (Seçiniz)"
+                    on_release: app.show_time_options()
+                    pos_hint: {"center_x": .5}
 
-        back_button = MDRaisedButton(
-            text="Geri Dön",
-            on_press=self.go_back
-        )
+                MDTextField:
+                    hint_text: "Kaç gün alınacak?"
+                    input_filter: "int"
+                
+                MDTextField:
+                    hint_text: "Öğündeki kullanım miktarı (Örn: 1 ölçek)"
 
-        layout.add_widget(self.drug_name)
-        layout.add_widget(self.dosage)
-        layout.add_widget(self.frequency)
-        layout.add_widget(back_button)
+        MDBoxLayout:
+            spacing: "15dp"
+            size_hint_y: None
+            height: "60dp"
+            MDRoundFlatButton:
+                text: "İPTAL ET"
+                size_hint_x: .5
+                on_release: app.cancel_and_back()
+            MDFillRoundFlatButton:
+                text: "KAYDET"
+                size_hint_x: .5
+                md_bg_color: 0.4, 0.1, 0.9, 1
+                on_release: app.close_form()
 
-        self.add_widget(layout)
-
-    def go_back(self, instance):
-        self.manager.current = "main"
-
-
-# =========================
-# ANA UYGULAMA
-# =========================
-class MainApp(MDApp):
-
+class MedApp(MDApp):
     def build(self):
-        # ScreenManager ekleniyor (çok ekran için)
-        self.sm = ScreenManager()
+        self.theme_cls.primary_palette = "Purple"
+        return Builder.load_string(KV)
 
-        # ===== SENİN ANA EKRANIN =====
-        screen = MDScreen(name="main")
-        layout = BoxLayout(orientation='vertical')
+    def open_form(self, mode):
+        self.root.ids.mini_menu.opacity = 0
+        self.root.ids.mini_menu.disabled = True
+        
+        self.root.ids.form_title.text = f"{mode.capitalize()} Ekle"
+        
+        for f in ['ilac_fields', 'alarm_fields', 'tahlil_fields']:
+            self.root.ids[f].opacity = 0
+            self.root.ids[f].disabled = True 
+            self.root.ids[f].height = 0
 
-        button = MDFloatingActionButton(
-            icon="plus",
-            pos_hint={"center_x": 0.5, "center_y": 0.1},
-            md_bg_color=(128, 0, 128, 1),
-            icon_size="50dp",
+        active_id = f"{mode.replace('ç', 'c')}_fields"
+        active_group = self.root.ids[active_id]
+        active_group.opacity = 1
+        active_group.disabled = False 
+        active_group.height = "250dp" 
+
+        Animation(pos_hint={"center_x": 0.5, "center_y": 0.5}, duration=0.3).start(self.root.ids.form_page)
+
+    def cancel_and_back(self):
+        anim = Animation(pos_hint={"center_x": 0.5, "center_y": -1}, duration=0.3)
+        for f in ['ilac_fields', 'alarm_fields', 'tahlil_fields']:
+            self.root.ids[f].disabled = True
+        if 'mini_menu' in self.root.ids:
+            self.root.ids.mini_menu.opacity = 1
+            self.root.ids.mini_menu.disabled = True 
+
+        anim.start(self.root.ids.form_page)
+
+    def close_form(self):
+        Animation(pos_hint={"center_x": 0.5, "center_y": -1}, duration=0.3).start(self.root.ids.form_page)
+        print("Veriler kaydedildi ve form kapatıldı.")
+
+    def show_time_options(self):
+        menu_items = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": i,
+                "on_release": lambda x=i: self.set_item(x),
+            } for i in ["Sabah / Aç", "Sabah / Tok", "Akşam / Aç", "Akşam / Tok"]
+        ]
+
+        self.menu = MDDropdownMenu(
+            caller=self.root.ids.drop_item, # Butonun altında açılmasını sağlar
+            items=menu_items,
+            width_mult=4,
         )
+        self.menu.open()
 
-        button.bind(on_press=self.open_dialog)
+    def set_item(self, text_item):
+        self.root.ids.drop_item.text = text_item
+        self.menu.dismiss()
 
-        layout.add_widget(button)
-        screen.add_widget(layout)
-
-        # ScreenManager'a ana ekran ekleniyor
-        self.sm.add_widget(screen)
-
-        # Yeni sayfa ekleniyor
-        self.sm.add_widget(AddDrugScreen(name="add_drug"))
-
-        return self.sm
-
-    # =========================
-    # DIALOG
-    # =========================
-    def open_dialog(self, instance):
-        content = BoxLayout(
-            orientation='vertical',
-            padding=20,
-            spacing=20
-        )
-
-        new_button = MDRaisedButton(
-            text="İlaç Ekle",
-            size_hint=(None, None),
-            width=200,
-            height=42,
-            md_bg_color=(128, 0, 128, 1),
-            theme_text_color="Custom",
-            text_color=(1, 1, 1, 1),
-            pos_hint={"center_x": 0.5}
-        )
-
-        # 👉 dialog içinden yeni sayfaya geçiş
-        new_button.bind(on_press=self.go_to_add_drug)
-
-        content.add_widget(new_button)
-
-        self.dialog = MDDialog(
-            type="custom",
-            content_cls=content,
-            size_hint=(None, None),
-            size=(700, 500),
-            auto_dismiss=True,
-            background="white"
-        )
-
-        self.dialog.open()
-
-    # =========================
-    # SAYFA GEÇİŞİ
-    # =========================
-    def go_to_add_drug(self, instance):
-        self.dialog.dismiss()
-        self.sm.current = "add_drug"
-
-
-# =========================
-# APP BAŞLAT
-# =========================
-MainApp().run()
+if __name__ == '__main__':
+    MedApp().run()
