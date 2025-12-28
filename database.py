@@ -99,6 +99,21 @@ class Database:
         conn.commit()
         conn.close()
 
+        # 8. AYARLAR TABLOSU
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS settings (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                bildirim_acik INTEGER
+            )
+        """)
+
+        # Varsayılan ayar (ilk kurulum)
+        cursor.execute("""
+            INSERT OR IGNORE INTO settings (id, bildirim_acik)
+            VALUES (1, 1)
+        """)
+
+
     # --- VARSAYILAN VERİLERİN YÜKLENMESİ (MASTER DATA) ---
 
     def master_ilaclari_yukle(self):
@@ -309,7 +324,25 @@ class Database:
             })
 
         return kartlar
-    
+       
+    def ayarlari_getir(self):
+        conn = self.baglanti_ac()
+        cursor = conn.cursor()
+        cursor.execute("SELECT bildirim_acik FROM settings WHERE id = 1")
+        row = cursor.fetchone()
+        conn.close()
+        return {"bildirim_acik": row[0]}
+
+    def ayar_guncelle(self, alan, deger):
+        conn = self.baglanti_ac()
+        cursor = conn.cursor()
+        cursor.execute(
+            f"UPDATE settings SET {alan} = ? WHERE id = 1",
+            (deger,)
+        )
+        conn.commit()
+        conn.close()
+
 # Test kodu
 if __name__ == "__main__":
     print("Veritabanı sistemi başlatılıyor...")
