@@ -96,9 +96,6 @@ class Database:
         cursor.execute(
             "CREATE TABLE IF NOT EXISTS duygu_turleri (id INTEGER PRIMARY KEY AUTOINCREMENT, ad TEXT UNIQUE)")
 
-        conn.commit()
-        conn.close()
-
         # 8. AYARLAR TABLOSU
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS settings (
@@ -112,7 +109,9 @@ class Database:
             INSERT OR IGNORE INTO settings (id, bildirim_acik)
             VALUES (1, 1)
         """)
-
+        
+        conn.commit()
+        conn.close()
 
     # --- VARSAYILAN VERİLERİN YÜKLENMESİ (MASTER DATA) ---
 
