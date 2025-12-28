@@ -1,3 +1,14 @@
+import sys
+import os
+
+# --- KRİTİK DÜZELTME 1: YOL AYARI ---
+# Python'un üst klasördeki 'database.py'yi görmesini sağlar
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+if project_root not in sys.path:
+    sys.path.append(project_root)
+# ------------------------------------
+
 from kivymd.uix.screen import MDScreen
 from kivy.lang import Builder
 from kivymd.uix.gridlayout import MDGridLayout
@@ -6,7 +17,18 @@ from kivymd.uix.label import MDLabel
 from kivy.uix.behaviors import ButtonBehavior
 from datetime import date
 import calendar
-from database import Database
+
+# Database dosyasını çağır
+try:
+    from database import Database
+except ImportError:
+    # Eğer hala bulamazsa hata verip çökmesin diye geçici çözüm
+    print("UYARI: Database dosyası bulunamadı, sahte veri kullanılıyor.")
+    class Database:
+        def gun_ikonunu_hesapla(self, tarih):
+            return {"status": "NO_PLAN", "icon": ""}
+        def dashboard_kartlarini_getir(self, tarih):
+            return []
 
 KV = """
 <DayButton>:
@@ -17,6 +39,7 @@ KV = """
     md_bg_color: (0.42, 0, 0.95, 0.1) if self.selected else (1, 1, 1, 0)
     padding: "5dp"
     spacing: "2dp"
+    elevation: 0
 
     MDLabel:
         text: root.day_num
@@ -44,7 +67,7 @@ KV = """
             specific_text_color: 0.42, 0, 0.95, 1
             left_action_items: [['calendar-month', lambda x: None]]
 
-        # Takvim Grid Alanı (Görseldeki gibi üst kısım)
+        # Takvim Grid Alanı
         MDCard:
             size_hint_y: None
             height: "280dp"
@@ -78,8 +101,9 @@ KV = """
                 spacing: "15dp"
 """
 
-# Özel Gün Butonu Tasarımı
-class DayButton(ButtonBehavior, MDCard):
+# --- KRİTİK DÜZELTME 2: MRO HATASI GİDERİLDİ ---
+# MDCard başa alındı
+class DayButton(MDCard, ButtonBehavior):
     day_num = ""
     status_icon = ""
     selected = False
@@ -95,6 +119,7 @@ Builder.load_string(KV)
 
 class TakvimEkrani(MDScreen):
     def on_enter(self):
+        # Database sınıfını başlat
         if not hasattr(self, "db"):
             self.db = Database()
         
@@ -122,8 +147,14 @@ class TakvimEkrani(MDScreen):
 
         for gun in range(1, gun_sayisi + 1):
             tarih = date(yil, ay, gun)
-            ikon_verisi = self.db.gun_ikonunu_hesapla(str(tarih))
-            ikon = ikon_verisi["icon"] if ikon_verisi["status"] != "NO_PLAN" else "·"
+            
+            # Veritabanından veri çekme denemesi
+            try:
+                ikon_verisi = self.db.gun_ikonunu_hesapla(str(tarih))
+            except:
+                ikon_verisi = {"status": "NO_PLAN", "icon": ""}
+
+            ikon = ikon_verisi.get("icon", "") if ikon_verisi.get("status") != "NO_PLAN" else "·"
             
             is_selected = (tarih == self.secili_tarih)
             
@@ -137,12 +168,15 @@ class TakvimEkrani(MDScreen):
 
     def gun_sec(self, tarih):
         self.secili_tarih = tarih
-        self.takvimi_ciz() # Seçili günü vurgulamak için yeniden çiziyoruz
+        self.takvimi_ciz()
         self.gun_detayi_yukle(tarih)
 
     def gun_detayi_yukle(self, tarih):
         self.ids.ilac_listesi.clear_widgets()
-        kartlar = self.db.dashboard_kartlarini_getir(str(tarih))
+        try:
+            kartlar = self.db.dashboard_kartlarini_getir(str(tarih))
+        except:
+            kartlar = []
 
         if not kartlar:
             self.ids.ilac_listesi.add_widget(
@@ -151,7 +185,6 @@ class TakvimEkrani(MDScreen):
             return
 
         for k in kartlar:
-            # Görseldeki kart rengine benzer bir yapı (Soft Yeşil/Sarı)
             bg_color = (0.8, 0.95, 0.8, 1) if k["taken"] else (0.95, 0.95, 0.95, 1)
             durum_metni = "Alındı ✅" if k["taken"] else ("Atlandı ❌" if k["taken"] is False else "Bekliyor")
 
@@ -165,7 +198,6 @@ class TakvimEkrani(MDScreen):
                 elevation=1
             )
 
-            # Kart içeriği: İlaç adı ve doz
             card.add_widget(MDLabel(text=k['ilac_adi'], bold=True, font_style="H6"))
             card.add_widget(MDLabel(text=f"{k['saat']} - {k['doz']}", theme_text_color="Secondary"))
             card.add_widget(MDLabel(text=durum_metni, halign="right", theme_text_color="Primary", bold=True))

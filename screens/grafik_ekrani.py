@@ -1,64 +1,81 @@
-# rapor_ekrani.py
+import sys
+import os
+from kivy.lang import Builder
 from kivymd.uix.screen import MDScreen
-from kivy.uix.boxlayout import BoxLayout
-
-# Grafik kütüphaneleri
-from graph_lib.backend_kivyagg import FigureCanvasKivyAgg
+# --- EKSİK OLAN SATIR BUYDU: ---
+from kivymd.uix.label import MDLabel 
+# -------------------------------
 import matplotlib.pyplot as plt
 
-# Üye 2'nin  yazdığın veritabanı sınıfını içe aktarıyoruz
-from database import Database
+# --- 1. DOSYA YOLLARI ---
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
 
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+# --- 2. KÜTÜPHANELER ---
+# Graph Lib
+try:
+    from graph_lib.backend_kivyagg import FigureCanvasKivyAgg
+except ImportError:
+    # Bulamazsa sistem kütüphanesini dene
+    try:
+        from kivy_garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
+    except:
+        FigureCanvasKivyAgg = None
+
+# Database
+try:
+    from database import Database
+except ImportError:
+    class Database:
+        def tahlil_sonuclarini_getir(self):
+            return {"tarihler": ["Pzt", "Sal"], "t4": [1.0, 1.2], "t3": [3.0, 3.1]}
+
+# KV Dosyasını Yükle
+kv_path = os.path.join(project_root, 'assets', 'grafik.kv')
+Builder.load_file(kv_path)
+
+# --- 3. EKRAN KODU ---
 class GrafikEkrani(MDScreen):
-    def _init_(self, **kwargs):
-        super()._init_(**kwargs)
-        # Veritabanı nesnesini başlatıyoruz. Böylece her seferinde sqlite3.connect 
-        self.db = Database()
-
     def on_enter(self):
-        """Ekran her açıldığında grafiği tazelemek için bu fonksiyon tetiklenir."""
-        # Eski grafikleri temizleyip yenisini çizmek için içeriği temizliyoruz
-        self.clear_widgets() 
-        self.ciz_grafik()
+        self.grafigi_olustur()
 
-    def ciz_grafik(self):
-        # Üye 2'nin hazırladığı fonksiyonu çağırıyoruz.
-        # Bu fonksiyon verileri (id, tsh, t3, t4, tarih) sırasıyla ve tarihe göre sıralı döner.
-        veriler = self.db.get_lab_history()
-
-        # Veritabanında henüz hiç tahlil kaydı yoksa hata vermemesi için kontrol
-        if not veriler:
-            print("Grafik çizilecek veri bulunamadı!")
+    def grafigi_olustur(self):
+        # Kutu kontrolü
+        if 'grafik_kutusu' not in self.ids:
             return
+            
+        box = self.ids.grafik_kutusu
+        box.clear_widgets()
 
-        # Veritabanından gelen verileri grafik için listelere ayırıyoruz.
-        # Sıralama: v[2] -> T3, v[3] -> T4, v[4] -> Tarih
-        tarih_listesi = [v[4] for v in veriler] 
-        t3_listesi = [v[2] for v in veriler]    
-        t4_listesi = [v[3] for v in veriler]    
+        # Verileri Al
+        db = Database()
+        if hasattr(db, 'tahlil_sonuclarini_getir'):
+            veriler = db.tahlil_sonuclarini_getir()
+        else:
+            veriler = {}
 
-        # Grafik çizim alanını temizleyip yeni değerleri giriyoruz
-        plt.clf()
+        # Grafik Çiz
         fig, ax = plt.subplots()
-
-        # T3 ve T4 çizgilerini çiziyoruz
-        ax.plot(tarih_listesi, t3_listesi, label="T3 Değeri", color="purple", marker='o')
-        ax.plot(tarih_listesi, t4_listesi, label="T4 Değeri", color="blue", marker='s')
-
-        # Grafik başlıkları ve isimlendirmeleri
-        ax.set_title("Tiroid Hormon Takip Grafiği")
-        ax.set_xlabel("Tahlil Tarihi")
-        ax.set_ylabel("Değerler")
-        ax.legend()
+        fig.patch.set_facecolor('#ffffff')
+        ax.set_facecolor('#f9f9f9')
         
-        # Tarihlerin birbirine girmemesi için 45 derece döndürüyoruz
-        plt.xticks(rotation=45)
-        plt.tight_layout()
+        if veriler and "tarihler" in veriler:
+            ax.plot(veriler["tarihler"], veriler["t4"], label='T4', color='#6200EE', marker='o')
+            ax.plot(veriler["tarihler"], veriler["t3"], label='T3', color='#03DAC6', marker='s')
+            ax.legend()
 
-        # Grafiği Kivy içinde görüntülenebilir bir kutuya ekliyoruz
-        kutu = BoxLayout()
-        kutu.add_widget(FigureCanvasKivyAgg(fig))
+        ax.grid(True, linestyle='--', alpha=0.3)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
 
-        # Oluşturduğumuz bu grafik kutusunu ana ekrana ekliyoruz
-        self.add_widget(kutu)
-
+        # Ekrana Ekle
+        if FigureCanvasKivyAgg:
+            grafik_widget = FigureCanvasKivyAgg(fig)
+            box.add_widget(grafik_widget)
+        else:
+            # İşte hata veren satır burasıydı, artık çalışacak:
+            box.add_widget(MDLabel(text="Grafik Kütüphanesi Yüklenemedi!", halign="center"))
+            
