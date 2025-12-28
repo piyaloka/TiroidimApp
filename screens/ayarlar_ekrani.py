@@ -4,7 +4,7 @@ from kivy.lang import Builder
 from kivy.properties import StringProperty, NumericProperty
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.list import OneLineListItem
-from kivymd.uix.button import MDFlatButton
+from kivymd.uix.button import MDFlatButton, MDRaisedButton
 import sqlite3
 
 KV = """
