@@ -65,16 +65,14 @@ KV = '''
 MDScreen:
     md_bg_color: 1, 1, 1, 1
 
-   # --- 1. MİNİ PENCERE (KONUMU YUKARI ALINDI) ---
-   MDCard:
+    MDCard:
         id: mini_menu
         size_hint: None, None
         size: "240dp", "250dp"
-        # "+" butonunun tam üstüne gelmemesi için y ekseni artırıldı
-        pos_hint: {"center_x": 0.4, "center_y": 0.35} 
+        pos_hint: {"center_x": 0.65, "center_y": 0.35} 
         opacity: 0
         disabled: True
-        elevation: 10
+        elevation: 4
         radius: [50, 50, 10, 50]
         line_color: 0.5, 0.2, 0.8, 1
         line_width: 1.5
@@ -95,14 +93,14 @@ MDScreen:
                 text: "Tahlil ekle"
                 size_hint_x: 1
                 on_release: app.open_form("tahlil") 
-
-       # ANA ARTI (+) BUTONU
+                
     MDFloatingActionButton:
         id: main_fab
         icon: "plus"
         md_bg_color: 0.4, 0.1, 0.9, 1
         pos_hint: {"center_x": .85, "center_y": .1}
-        on_release: app.toggle_menu()   
+        on_release: app.toggle_menu()
+'''
 
 class MedApp(MDApp):
     def build(self):
@@ -112,11 +110,18 @@ class MedApp(MDApp):
     def toggle_menu(self):
         menu = self.root.ids.mini_menu
         is_open = menu.opacity > 0
-        Animation(opacity=0 if is_open else 1, duration=0.2).start(menu)
-        menu.disabled = is_open      
+        
+        if is_open:
+            anim = Animation(opacity=0, d=0.2)
+            menu.disabled = True
+        else:
+            anim = Animation(opacity=1, d=0.2)
+            menu.disabled = False
+        
+        anim.start(menu)
 
     def open_form(self, mode):
         print(f"{mode} formu açılıyor...")
 
 if __name__ == '__main__':
-    MedApp().run() 
+    MedApp().run()
