@@ -16,13 +16,13 @@ KV_ONBOARDING = """
             size_hint_y: None
             height: "10dp"
             spacing: "5dp"
-            # 1. Çizgi 
+            # 1.Çizgi 
             MDBoxLayout:
                 md_bg_color: 0.67, 0.85, 0.28, 0.3
-            # 2. Çizgi 
+            # 2.Çizgi 
             MDBoxLayout:
                 md_bg_color: 0.67, 0.85, 0.28, 1
-            # 3. Çizgi
+            # 3.Çizgi
             MDBoxLayout:
                 md_bg_color: 0.67, 0.85, 0.28, 0.3
 
