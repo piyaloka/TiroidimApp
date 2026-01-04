@@ -102,7 +102,7 @@ KV_PROFILE =
 
             MDFillRoundFlatButton:
                 text: "Bilgileri Güncelle"
-                size_hint_x: 0.8
+                size_hint_x: 0.9
                 pos_hint: {"center_x": 0.5}
                 md_bg_color: 0.67, 0.85, 0.28, 1 
                 on_release: root.manager.current = "onboarding"
