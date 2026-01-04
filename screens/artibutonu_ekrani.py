@@ -1,10 +1,5 @@
 import sys
 import os
-#kodunuzda hata çıkmaması için
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager
@@ -217,11 +212,12 @@ kv_str = """
                     text_val: "Birim"
                     size_hint_x: .4
                     on_touch_down: if self.collide_point(*args[1].pos): root.open_birim_menu()
-                CustomInput:
-                    id: t_date
-                    label: "Tahlili Ne Zaman Yaptırdınız?"
-                    text_val: "GG/AA/YYYY"
-                    on_touch_down: if self.collide_point(*args[1].pos): root.start_date_selection()
+            
+            CustomInput:
+                id: t_date
+                label: "Tahlili Ne Zaman Yaptırdınız?"
+                text_val: "GG/AA/YYYY"
+                on_touch_down: if self.collide_point(*args[1].pos): root.start_date_selection()
 
             MDBoxLayout:
                 adaptive_height: True
@@ -239,7 +235,7 @@ kv_str = """
                     on_release: root.kaydet()
 """
 
-# --- ÖNEMLİ DÜZELTME: Builder burada çalışmalı ---
+# --- KV YÜKLEME ---
 Builder.load_string(kv_str)
 
 # --- ORTAK FONKSİYONLAR İÇİN BASE CLASS ---
@@ -365,7 +361,7 @@ class AlarmEkrani(BaseMenuScreen):
         self.manager.current = "dashboard" 
 
 
-# --- 3. SINIF: TAHLİL EKLEME ---
+# --- 3. SINIF: TAHLİL EKLEME (GÜNCELLENDİ) ---
 class TahlilEkrani(BaseMenuScreen):
     _last_len = 0  
 
@@ -408,16 +404,33 @@ class TahlilEkrani(BaseMenuScreen):
         self.open_dropdown(self.ids.t_unit.ids.text_field, birimler, self.set_val)
 
     def kaydet(self):
+        # EKRANDAN VERİLERİ AL
         ad = self.ids.t_name.ids.text_field.text
         deger = self.ids.t_val.ids.text_field.text
-        birim = self.ids.t_unit.ids.text_field.text
         tarih = self.ids.t_date.ids.text_field.text
     
-        if ad == "Seçiniz" or deger in ["", "Değer girin"]:
-            print("Lütfen tahlil adı ve değerini kontrol edin!")
+        # 1. Boş Alan Kontrolü
+        if ad == "Seçiniz" or deger in ["", "Değer girin", "0"]:
+            print("Hata: Lütfen tahlil türünü ve değerini giriniz!")
             return
         
-        print(f"Tahlil Kaydedildi: {ad} - {deger} {birim} - Tarih: {tarih}")
+        # 2. Değeri Sayıya Çevir (Hata alırsa durdur)
+        try:
+            val_float = float(deger)
+        except ValueError:
+            print("Hata: Tahlil değeri sayı olmalıdır!")
+            return
+
+        # 3. Hangi tahlil seçildiyse onu ayarla, diğerlerini boş bırak
+        tsh = val_float if ad == "TSH" else None
+        # "Serbest T3" veya sadece "T3" içeriyorsa yakalar
+        t3 = val_float if "T3" in ad else None
+        t4 = val_float if "T4" in ad else None
+
+        # 4. Veritabanına Gerçek Kayıt
+        self.db.tahlil_ekle(tsh, t3, t4, tarih)
+        
+        print(f"BAŞARILI: {ad} ({val_float}) veritabanına eklendi.")
+        
+        # 5. Dashboard'a dön
         self.manager.current = "dashboard"
-
-

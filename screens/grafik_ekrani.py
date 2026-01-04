@@ -1,81 +1,250 @@
-import sys
-import os
-from kivy.lang import Builder
+import io
 from kivymd.uix.screen import MDScreen
-# --- EKSİK OLAN SATIR BUYDU: ---
-from kivymd.uix.label import MDLabel 
-# -------------------------------
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.card import MDCard
+from kivymd.uix.label import MDLabel
+from kivymd.uix.button import MDIconButton
+from kivy.uix.image import Image
+from kivy.core.image import Image as CoreImage
+from kivy.lang import Builder
+from kivy.metrics import dp
+from kivy.utils import get_color_from_hex
+from database import Database
+from datetime import datetime
 import matplotlib.pyplot as plt
 
-# --- 1. DOSYA YOLLARI ---
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(current_dir)
-
-if project_root not in sys.path:
-    sys.path.append(project_root)
-
-# --- 2. KÜTÜPHANELER ---
-# Graph Lib
-try:
-    from graph_lib.backend_kivyagg import FigureCanvasKivyAgg
-except ImportError:
-    # Bulamazsa sistem kütüphanesini dene
-    try:
-        from kivy_garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
-    except:
-        FigureCanvasKivyAgg = None
-
-# Database
-try:
-    from database import Database
-except ImportError:
-    class Database:
-        def tahlil_sonuclarini_getir(self):
-            return {"tarihler": ["Pzt", "Sal"], "t4": [1.0, 1.2], "t3": [3.0, 3.1]}
-
-# KV Dosyasını Yükle
-kv_path = os.path.join(project_root, 'assets', 'grafik.kv')
-Builder.load_file(kv_path)
-
-# --- 3. EKRAN KODU ---
-class GrafikEkrani(MDScreen):
-    def on_enter(self):
-        self.grafigi_olustur()
-
-    def grafigi_olustur(self):
-        # Kutu kontrolü
-        if 'grafik_kutusu' not in self.ids:
-            return
-            
-        box = self.ids.grafik_kutusu
-        box.clear_widgets()
-
-        # Verileri Al
-        db = Database()
-        if hasattr(db, 'tahlil_sonuclarini_getir'):
-            veriler = db.tahlil_sonuclarini_getir()
-        else:
-            veriler = {}
-
-        # Grafik Çiz
-        fig, ax = plt.subplots()
-        fig.patch.set_facecolor('#ffffff')
-        ax.set_facecolor('#f9f9f9')
+# --- KV TASARIMI ---
+kv_grafik = """
+<GrafikEkrani>:
+    name: "grafik"
+    md_bg_color: 1, 1, 1, 1
+    
+    MDFloatLayout:
         
-        if veriler and "tarihler" in veriler:
-            ax.plot(veriler["tarihler"], veriler["t4"], label='T4', color='#6200EE', marker='o')
-            ax.plot(veriler["tarihler"], veriler["t3"], label='T3', color='#03DAC6', marker='s')
-            ax.legend()
+        # --- ÜST BAŞLIK ---
+        MDBoxLayout:
+            id: header_box
+            orientation: 'horizontal'
+            adaptive_height: True
+            pos_hint: {"top": 1}
+            padding: ["20dp", "15dp", "20dp", "10dp"]
+            spacing: "10dp"
+            md_bg_color: 1, 1, 1, 1
+            
+            MDIconButton:
+                icon: "arrow-left"
+                theme_text_color: "Custom"
+                text_color: 0.2, 0.2, 0.2, 1
+                on_release: root.manager.current = "dashboard"
+                pos_hint: {"center_y": .5}
 
-        ax.grid(True, linestyle='--', alpha=0.3)
+            MDLabel:
+                text: "Analiz ve Grafikler"
+                font_style: "H5"
+                bold: True
+                theme_text_color: "Custom"
+                text_color: 0.2, 0.1, 0.35, 1
+                pos_hint: {"center_y": .5}
+
+        # --- İÇERİK (SCROLL) ---
+        MDScrollView:
+            size_hint_y: None
+            height: root.height - header_box.height - dp(80) 
+            pos_hint: {"top": .88}
+            bar_width: 0
+            
+            MDBoxLayout:
+                orientation: 'vertical'
+                adaptive_height: True
+                padding: ["20dp", "10dp", "20dp", "100dp"]
+                spacing: "20dp"
+
+                # 1. GRAFİK KARTI
+                MDCard:
+                    size_hint_y: None
+                    height: "320dp"
+                    radius: [25,]
+                    elevation: 0
+                    padding: "10dp"
+                    orientation: 'vertical'
+                    md_bg_color: [0.96, 0.96, 0.98, 1]
+                    
+                    MDLabel:
+                        text: "TSH - T3 - T4 Değişimi"
+                        font_style: "Caption"
+                        bold: True
+                        size_hint_y: None
+                        height: "20dp"
+                        theme_text_color: "Secondary"
+                        halign: "center"
+
+                    # Grafik Resmi Buraya Gelecek
+                    MDBoxLayout:
+                        id: chart_box
+                        orientation: 'vertical'
+                        size_hint: 1, 1
+
+                # 2. LİSTE BAŞLIĞI
+                MDLabel:
+                    text: "Laboratuvar Geçmişi"
+                    font_style: "H6"
+                    bold: True
+                    adaptive_height: True
+                    theme_text_color: "Custom"
+                    text_color: 0.2, 0.1, 0.35, 1
+                    padding: [0, "10dp", 0, 0]
+
+                # 3. SONUÇLAR LİSTESİ
+                MDBoxLayout:
+                    id: results_list
+                    orientation: 'vertical'
+                    adaptive_height: True
+                    spacing: "15dp"
+
+        # --- ALT NAVİGASYON ---
+        MDCard:
+            size_hint: 0.95, None
+            height: "70dp"
+            pos_hint: {"center_x": .5, "center_y": .06}
+            radius: [35,]
+            elevation: 2 
+            md_bg_color: [1, 1, 1, 0.98]
+            MDBoxLayout:
+                padding: ["25dp", 0, "25dp", 0] 
+                spacing: "30dp"
+                
+                # Anasayfa
+                MDIconButton:
+                    icon: "home-outline"
+                    theme_icon_color: "Custom"
+                    icon_color: [0.5, 0.3, 0.9, 1]
+                    pos_hint: {"center_y": .5}
+                    on_release: root.manager.current = "dashboard"
+                    size_hint_x: 1
+                
+                # Takvim
+                MDIconButton:
+                    icon: "calendar-month-outline"
+                    theme_icon_color: "Custom"
+                    icon_color: [0.5, 0.3, 0.9, 1]
+                    pos_hint: {"center_y": .5}
+                    on_release: root.manager.current = "takvim"
+                    size_hint_x: 1
+
+                # Grafik (Aktif)
+                MDIconButton:
+                    icon: "chart-line"
+                    theme_icon_color: "Custom"
+                    icon_color: [0.3, 0.1, 0.6, 1] 
+                    md_bg_color: [0.9, 0.85, 1, 0.5] 
+                    pos_hint: {"center_y": .5}
+                    size_hint_x: 1
+                    on_release: root.manager.current = "grafik"
+"""
+
+Builder.load_string(kv_grafik)
+
+class GrafikEkrani(MDScreen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.db = Database()
+
+    def on_enter(self):
+        """Ekran her açıldığında verileri tazeleyip grafiği yeniden çizer"""
+        self.update_content()
+
+    def update_content(self):
+        self.ids.chart_box.clear_widgets()
+        self.ids.results_list.clear_widgets()
+
+        # Veritabanından geçmişi çek
+        sonuclar = self.db.get_lab_history() 
+
+        # EĞER HİÇ VERİ YOKSA UYARI GÖSTER
+        if not sonuclar:
+            self.show_no_data()
+            return
+
+        # Verileri Ayrıştır
+        dates = []
+        tsh_vals = []
+        t3_vals = []
+        t4_vals = []
+
+        for veri in sonuclar:
+            # Tarih formatlama
+            date_str = veri[4]
+            try:
+                dt_obj = datetime.strptime(date_str, "%d/%m/%Y")
+                dates.append(dt_obj.strftime("%d/%m"))
+            except ValueError:
+                dates.append(date_str[:5]) 
+            
+            tsh_vals.append(float(veri[1]) if veri[1] is not None else None)
+            t3_vals.append(float(veri[2]) if veri[2] is not None else None)
+            t4_vals.append(float(veri[3]) if veri[3] is not None else None)
+
+        self.create_chart_image(dates, tsh_vals, t3_vals, t4_vals)
+
+        for veri in reversed(sonuclar):
+            self.create_result_card(veri)
+
+    def show_no_data(self):
+        box = MDBoxLayout(orientation='vertical', spacing="10dp", pos_hint={"center_x": .5, "center_y": .5})
+        icon = MDIconButton(icon="chart-bar", icon_size="40sp", theme_icon_color="Custom", icon_color=[0.8, 0.8, 0.8, 1], pos_hint={"center_x": .5})
+        lbl = MDLabel(text="Henüz tahlil verisi bulunamadı.\n'+' butonuna basıp veri ekleyin.", halign="center", theme_text_color="Hint", font_size="14sp")
+        box.add_widget(icon)
+        box.add_widget(lbl)
+        self.ids.chart_box.add_widget(box)
+
+    def create_chart_image(self, dates, tsh, t3, t4):
+        plt.clf()
+        fig, ax = plt.subplots(figsize=(5, 3.2), dpi=100)
+        
+        # Çizgiler (Değer yoksa çizmez)
+        ax.plot(dates, tsh, marker='o', linestyle='-', color='#6200EA', label='TSH', linewidth=2)
+        ax.plot(dates, t3, marker='s', linestyle='--', color='#FF9800', label='T3', linewidth=2)
+        ax.plot(dates, t4, marker='^', linestyle=':', color='#009688', label='T4', linewidth=2)
+
+        # Tasarım
+        ax.set_facecolor('#F8F8FA')
+        fig.patch.set_facecolor('#F8F8FA')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
+        ax.grid(True, linestyle='--', alpha=0.3)
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=3, frameon=False, fontsize=9)
+        
+        plt.tight_layout()
 
-        # Ekrana Ekle
-        if FigureCanvasKivyAgg:
-            grafik_widget = FigureCanvasKivyAgg(fig)
-            box.add_widget(grafik_widget)
-        else:
-            # İşte hata veren satır burasıydı, artık çalışacak:
-            box.add_widget(MDLabel(text="Grafik Kütüphanesi Yüklenemedi!", halign="center"))
-            
+        # Resmi RAM'e kaydet ve Kivy'e aktar
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        plt.close(fig)
+
+        im_data = CoreImage(buf, ext='png')
+        img_widget = Image(texture=im_data.texture, allow_stretch=True, keep_ratio=False)
+        self.ids.chart_box.add_widget(img_widget)
+
+    def create_result_card(self, veri):
+        card = MDCard(orientation='vertical', size_hint_y=None, height="90dp", radius=[20,], padding="12dp", elevation=0, md_bg_color=[0.98, 0.98, 1, 1])
+        
+        lbl_date = MDLabel(text=f"Tarih: {veri[4]}", font_style="Subtitle2", theme_text_color="Primary", bold=True, adaptive_height=True)
+        card.add_widget(lbl_date)
+
+        values_box = MDBoxLayout(orientation='horizontal', spacing="10dp", padding=[0, "5dp", 0, 0])
+        values_box.add_widget(self.make_val_box("TSH", veri[1] if veri[1] is not None else "-", "mIU/L", "#6200EA"))
+        values_box.add_widget(self.make_val_box("T3", veri[2] if veri[2] is not None else "-", "pg/mL", "#FF9800"))
+        values_box.add_widget(self.make_val_box("T4", veri[3] if veri[3] is not None else "-", "ng/dL", "#009688"))
+        card.add_widget(values_box)
+        self.ids.results_list.add_widget(card)
+
+    def make_val_box(self, label, value, unit, color_hex):
+        box = MDBoxLayout(orientation='vertical', size_hint_x=1)
+        lbl_title = MDLabel(text=label, font_style="Caption", halign="center", theme_text_color="Custom", text_color=get_color_from_hex(color_hex), bold=True)
+        lbl_val = MDLabel(text=str(value), font_style="Body1", halign="center", bold=True)
+        lbl_unit = MDLabel(text=unit, font_style="Overline", halign="center", theme_text_color="Secondary")
+        box.add_widget(lbl_title)
+        box.add_widget(lbl_val)
+        box.add_widget(lbl_unit)
+        return box
