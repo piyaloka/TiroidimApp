@@ -118,10 +118,17 @@ class Database:
     def master_ilaclari_yukle(self):
         """Piyasadaki ilaçları otomatik yükleyerek kullanıcı hatasını önler. [cite: 20]"""
         ilaclar = [
-            ("Euthyrox", "25mcg"), ("Euthyrox", "50mcg"), ("Euthyrox", "100mcg"),
-            ("Levotiron", "25mcg"), ("Levotiron",
-                                     "75mcg"), ("Levotiron", "100mcg"),
-            ("Tiromel", "25mcg"), ("Tefor", "100mcg")
+            ("BITIRON TABLET", "50 mcg / 12.5 mcg"),
+            ("EUTHYROX TABLET", "25 mcg"), ("EUTHYROX TABLET", "50 mcg"),
+            ("EUTHYROX TABLET", "75 mcg"), ("EUTHYROX TABLET", "100 mcg"),
+            ("EUTHYROX TABLET", "125 mcg"), ("EUTHYROX TABLET", "150 mcg"),
+            ("EUTHYROX TABLET", "175 mcg"), ("EUTHYROX TABLET", "200 mcg"),
+            ("L-THYROXINE FLAKON", "200 mcg"),
+            ("TIROMEL TABLET", "25 mcg"),
+            ("PERIZOL FILM KAPLI TABLET", "5 mg"), ("PERIZOL FILM KAPLI TABLET", "10 mg"),
+            ("THYROMAZOL TABLET", "5 mg"), ("THYROMAZOL TABLET", "10 mg"),
+            ("PROPYCIL TABLET", "50 mg"),
+            ("LEVIPOMIX I.V.", "Liyofilize Toz")
         ]
         conn = self.baglanti_ac()
         cursor = conn.cursor()
@@ -167,12 +174,20 @@ class Database:
         conn.close()
         return sonuc
 
-    def master_ilac_listesi_getir(self):
-        """Üye 7 için: İlaç ekleme dropdown menüsünü doldurur. [cite: 55]"""
+    def master_ilac_listesi_getir(self, ilac_adi=None):
+        """
+        İlaç seçilmediyse (None): Benzersiz ilaç isimlerini döner.
+        İlaç seçildiyse: O ilaca ait dozları döner.
+        """
         conn = self.baglanti_ac()
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT ilac_adi || ' - ' || varsayilan_doz FROM master_ilaclar")
+        if ilac_adi:
+            # Seçilen ilacın dozlarını getir
+            cursor.execute("SELECT varsayilan_doz FROM master_ilaclar WHERE ilac_adi = ?", (ilac_adi,))
+        else:
+            # Sadece benzersiz ilaç isimlerini getir (Euthyrox'un 8 kere çıkmaması için)
+            cursor.execute("SELECT DISTINCT ilac_adi FROM master_ilaclar")
+        
         liste = [r[0] for r in cursor.fetchall()]
         conn.close()
         return liste
