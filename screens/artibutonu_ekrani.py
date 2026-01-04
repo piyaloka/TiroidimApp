@@ -1,4 +1,6 @@
+from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
+from kivy.uix.screenmanager import ScreenManager
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.pickers import MDTimePicker
 from kivy.lang import Builder
@@ -426,3 +428,5 @@ class TahlilEkrani(BaseMenuScreen):
         
         print(f"Tahlil Kaydedildi: {ad} - {deger} {birim} - Tarih: {tarih}")
         self.manager.current = "dashboard"
+
+
