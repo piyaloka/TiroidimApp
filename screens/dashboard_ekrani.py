@@ -22,8 +22,8 @@ class WeekCalendar(MDCard):
     month_label = StringProperty("")
     selected_idx = NumericProperty(0)
 
-    def _init_(self, **kwargs):
-        super()._init_(**kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self._start_date = _dt.date.today()
         self._start_date = self._start_date - _dt.timedelta(days=self._start_date.weekday())
         self._rebuild()
@@ -706,6 +706,5 @@ class ThyroidApp(MDApp):
             self.toggle_menu()
 
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     ThyroidApp().run()
-    
