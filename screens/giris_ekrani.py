@@ -78,7 +78,7 @@ KV_WELCOME = """
             font_size: "20sp"
             md_bg_color: 0.42, 0, 0.95, 1
             text_color: 1, 1, 1, 1
-            size_hint_x: 0.8
+            size_hint_x: 0.9
             pos_hint: {"center_x": 0.5}
             on_release: 
                 root.manager.current = "onboarding" 
