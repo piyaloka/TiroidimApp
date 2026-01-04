@@ -217,36 +217,11 @@ kv_str = """
                     text_val: "Birim"
                     size_hint_x: .4
                     on_touch_down: if self.collide_point(*args[1].pos): root.open_birim_menu()
-
-            MDBoxLayout:
-                orientation: 'vertical'
-                adaptive_height: True
-                spacing: dp(12)
-                MDLabel:
-                    text: "Kaç adet ve kaç gün alacaksınız?"
-                    font_style: "Caption"
-                    theme_text_color: "Secondary"
-                    padding: [dp(12), dp(4)]
-                MDBoxLayout:
-                    adaptive_height: True
-                    spacing: 10
-                    CustomInput:
-                        id: t_adet
-                        label: "Adet"
-                        text_val: "0"
-                        readonly: False
-                        input_filter: "float"
-                    CustomInput:
-                        id: t_gun
-                        label: "Gün"
-                        text_val: "0"
-                        readonly: False
-                        input_filter: "float"
-            CustomInput:
-                id: t_date
-                label: "Tahlili Ne Zaman Yaptırdınız?"
-                text_val: "GG/AA/YYYY"
-                on_touch_down: if self.collide_point(*args[1].pos): root.start_date_selection()
+                CustomInput:
+                    id: t_date
+                    label: "Tahlili Ne Zaman Yaptırdınız?"
+                    text_val: "GG/AA/YYYY"
+                    on_touch_down: if self.collide_point(*args[1].pos): root.start_date_selection()
 
             MDBoxLayout:
                 adaptive_height: True
@@ -354,7 +329,7 @@ class AlarmEkrani(BaseMenuScreen):
 
     def open_time_picker(self):
         options = ["Sabah / Aç", "Sabah / Tok", "Öğle / Aç", "Öğle / Tok", "Akşam / Aç", "Akşam / Tok"]
-        self.open_dropdown(self.ids.a_vakit_durum.ids.text_field, options, self.set_val)
+        self.open_dropdown(self.ids.a_vakit_durum.ids.text_field, options, self.set_multi_val)
     
     def open_period_menu(self):
         time_dialog = MDTimePicker()
@@ -365,6 +340,15 @@ class AlarmEkrani(BaseMenuScreen):
         # Saati string formatına çevir (09:05 gibi)
         saat_str = time.strftime("%H:%M")
         self.ids.a_time_full.ids.text_field.text = saat_str
+
+    def set_multi_val(self, text, caller):
+        current_text = caller.text
+        if not current_text or current_text == "Seçiniz": caller.text = text
+        else:
+            selections = [s.strip() for s in current_text.split(",")]
+            if text not in selections:
+                if len(selections) < 2: caller.text = f"{current_text}, {text}"
+        self.menu.dismiss()
 
     def kaydet(self):
         ilac = self.ids.a_name.ids.text_field.text
