@@ -1,5 +1,5 @@
 from kivymd.uix.screen import MDScreen
-from kivymd.uix.pickers import MDDatePicker
+# DatePicker importu kaldırıldı
 from kivy.lang import Builder
 from kivy.properties import StringProperty
 from database import Database
@@ -36,7 +36,7 @@ KV_ONBOARDING = """
             size_hint_y: 0.92
             pos_hint: {"center_x": 0.5}
 
-            # --- [BOŞLUK 1] İçeriği aşağı itmek için ---
+            # --- [BOŞLUK 1] ---
             Widget:
                 size_hint_y: 0.5
 
@@ -109,16 +109,19 @@ KV_ONBOARDING = """
                 adaptive_height: True
                 padding: [0, "5dp", 0, "5dp"] 
 
+                # DOĞUM TARİHİ ALANI (GÜNCELLENDİ)
                 MDTextField:
                     id: dogum
-                    hint_text: "Doğum Tarihi"
+                    hint_text: "Doğum Tarihi (GG/AA/YYYY)"
                     icon_left: "calendar"
                     mode: "fill"
                     fill_color_normal: 0.96, 0.98, 0.92, 1
                     line_color_focus: 0.67, 0.85, 0.28, 1
                     radius: [15, 15, 15, 15]
-                    readonly: True
-                    on_focus: if self.focus: root.open_date_picker()
+                    # Readonly ve on_focus kaldırıldı, manuel girişe açıldı.
+                    base_direction: "ltr"  # İmleç kaymasını önlemek için eklendi
+                    multiline: False
+                    max_text_length: 10
 
                 # Cinsiyet Butonları
                 MDBoxLayout:
@@ -175,7 +178,7 @@ KV_ONBOARDING = """
                         line_color_focus: 0.67, 0.85, 0.28, 1
                         radius: [15, 15, 15, 15]
 
-            # --- [BOŞLUK 2] İçeriği yukarı itmek için ---
+            # --- [BOŞLUK 2] ---
             Widget:
                 size_hint_y: 0.5
 
@@ -207,23 +210,14 @@ class OnboardingEkrani(MDScreen):
                 instance.text = filtered
                 instance.cursor = (len(instance.text), 0)
 
-    def open_date_picker(self):
-        date_dialog = MDDatePicker()
-        date_dialog.bind(on_save=self.on_date_save, on_cancel=self.close_picker)
-        date_dialog.open()
-        self.ids.dogum.focus = False
-
-    def close_picker(self, instance, value):
-        self.ids.dogum.focus = False
-
-    def on_date_save(self, instance, value, date_range):
-        self.ids.dogum.text = value.strftime("%d.%m.%Y")
+    # DatePicker ile ilgili open/close/save fonksiyonları SİLİNDİ.
 
     def kaydet_ve_ilerle(self):
         isim = self.ids.isim.text
         soyisim = self.ids.soyisim.text
         boy_text = self.ids.boy.text
         kilo_text = self.ids.kilo.text
+        dogum_tarihi = self.ids.dogum.text # Artık tarihi buradan text olarak alıyoruz
         
         # Basit validasyon: İsim yoksa geçirme (opsiyonel)
         # if not isim: return 
@@ -235,10 +229,16 @@ class OnboardingEkrani(MDScreen):
             cursor.execute("DELETE FROM kullanici")
             boy = int(boy_text) if boy_text and boy_text.isdigit() else 0
             kilo = int(kilo_text) if kilo_text and kilo_text.isdigit() else 0
+            
+            # NOT: Yaş hesaplaması için tarihi parse etmemiz gerekebilir.
+            # Şimdilik eski kodundaki gibi hardcoded 25 bıraktım, 
+            # ancak istersen doğum tarihinden yaş hesaplayan bir kod ekleyebilirim.
+            yas = 25 
+            
             cursor.execute("""
                 INSERT INTO kullanici (ad_soyad, yas, boy, kilo, tiroid_tipi) 
                 VALUES (?, ?, ?, ?, ?)
-            """, (f"{isim} {soyisim}", 25, boy, kilo, "Belirsiz"))
+            """, (f"{isim} {soyisim}", yas, boy, kilo, "Belirsiz"))
             conn.commit()
             conn.close()
         except Exception as e:
