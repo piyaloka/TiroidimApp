@@ -1,4 +1,5 @@
 from kivymd.app import MDApp
+from kivymd.uix.screen import MDScreen
 from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.properties import StringProperty, ListProperty, BooleanProperty, NumericProperty
@@ -12,14 +13,8 @@ from kivy.factory import Factory
 import datetime as _dt
 import calendar as _cal
 
-Config.set('graphics', 'maxfps', '60')
-Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
-
-Window.size = (360, 740)
-
-
+# --- YARDIMCI SINIFLAR ---
 class WeekCalendar(MDCard):
-    # List of 7 dicts: {"dow": "P", "day": "30", "is_weekend": bool}
     days = ListProperty([])
     month_label = StringProperty("")
     selected_idx = NumericProperty(0)
@@ -29,7 +24,6 @@ class WeekCalendar(MDCard):
         self.sync_today()
 
     def _tr_dow(self, weekday: int) -> str:
-        # Monday=0 .. Sunday=6
         return ["P", "S", "Ç", "P", "C", "C", "P"][weekday]
 
     def _month_name_tr(self, month: int) -> str:
@@ -48,8 +42,6 @@ class WeekCalendar(MDCard):
                 "is_weekend": d.weekday() >= 5,
             })
         self.days = days
-
-        # keep selection inside 0..6
         if self.selected_idx < 0 or self.selected_idx > 6:
             self.selected_idx = 0
         self._update_month_label()
@@ -62,14 +54,6 @@ class WeekCalendar(MDCard):
         today = _dt.date.today()
         self._start_date = today - _dt.timedelta(days=today.weekday())
         self.selected_idx = today.weekday()
-        self._rebuild()
-
-    def prev_week(self):
-        self._start_date = self._start_date - _dt.timedelta(days=7)
-        self._rebuild()
-
-    def next_week(self):
-        self._start_date = self._start_date + _dt.timedelta(days=7)
         self._rebuild()
 
     def select_day(self, idx: int):
@@ -112,6 +96,7 @@ class MedicineCard(MDCard):
         self.selected_action = action
 
 
+# --- KV TASARIMI ---
 KV = '''
 <WeekCalendar>:
     size_hint_y: None
@@ -124,13 +109,10 @@ KV = '''
     MDBoxLayout:
         orientation: "vertical"
         spacing: "10dp"
-
-        # HAFTA: günler (harf + sayı tek hap içinde)
         MDGridLayout:
             cols: 7
             adaptive_height: True
             spacing: "8dp"
-
             # 0
             MDCard:
                 size_hint: None, None
@@ -138,8 +120,6 @@ KV = '''
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 0 else [1, 1, 1, 1])
-                ripple_behavior: True
-                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(0)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -159,7 +139,6 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 0 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[0]["is_weekend"]) else [0, 0, 0, 0.75]))
-
             # 1
             MDCard:
                 size_hint: None, None
@@ -167,8 +146,6 @@ KV = '''
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 1 else [1, 1, 1, 1])
-                ripple_behavior: True
-                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(1)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -188,7 +165,6 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 1 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[1]["is_weekend"]) else [0, 0, 0, 0.75]))
-
             # 2
             MDCard:
                 size_hint: None, None
@@ -196,8 +172,6 @@ KV = '''
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 2 else [1, 1, 1, 1])
-                ripple_behavior: True
-                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(2)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -217,7 +191,6 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 2 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[2]["is_weekend"]) else [0, 0, 0, 0.75]))
-
             # 3
             MDCard:
                 size_hint: None, None
@@ -225,8 +198,6 @@ KV = '''
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 3 else [1, 1, 1, 1])
-                ripple_behavior: True
-                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(3)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -246,7 +217,6 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 3 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[3]["is_weekend"]) else [0, 0, 0, 0.75]))
-
             # 4
             MDCard:
                 size_hint: None, None
@@ -254,8 +224,6 @@ KV = '''
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 4 else [1, 1, 1, 1])
-                ripple_behavior: True
-                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(4)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -275,7 +243,6 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 4 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[4]["is_weekend"]) else [0, 0, 0, 0.75]))
-
             # 5
             MDCard:
                 size_hint: None, None
@@ -283,8 +250,6 @@ KV = '''
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 5 else [1, 1, 1, 1])
-                ripple_behavior: True
-                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(5)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -304,7 +269,6 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 5 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[5]["is_weekend"]) else [0, 0, 0, 0.75]))
-
             # 6
             MDCard:
                 size_hint: None, None
@@ -312,8 +276,6 @@ KV = '''
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 6 else [1, 1, 1, 1])
-                ripple_behavior: True
-                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(6)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -334,7 +296,7 @@ KV = '''
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 6 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[6]["is_weekend"]) else [0, 0, 0, 0.75]))
 
-        # İnce çizgi göstergesi
+        # Çizgi
         MDAnchorLayout:
             size_hint_y: None
             height: "12dp"
@@ -347,6 +309,7 @@ KV = '''
                 radius: [1,]
                 elevation: 0
                 md_bg_color: [0.5, 0.3, 0.9, 0.25]
+
 <SymptomBtn>:
     size_hint: None, None
     size: "105dp", "40dp"
@@ -356,7 +319,8 @@ KV = '''
     ripple_behavior: True
     ripple_color: [0.5, 0.3, 0.9, 0.18]
     on_release:
-        app.toggle_symptom(root)
+        app.root.get_screen('dashboard').toggle_symptom(root)
+
     MDBoxLayout:
         padding: ["10dp", 0]
         spacing: "5dp"
@@ -405,7 +369,6 @@ KV = '''
         size_hint_y: None
         height: "55dp"
         spacing: "2dp"
-        
         MDLabel:
             text: root.time
             bold: True
@@ -415,7 +378,6 @@ KV = '''
             height: "26dp"
             theme_text_color: "Custom"
             text_color: [0, 0, 0, 0.9]
-
         MDLabel:
             text: root.pill
             font_size: "15sp"
@@ -431,7 +393,6 @@ KV = '''
         spacing: "8dp"
         size_hint_y: None
         height: "38dp"
-        
         ActionBtn:
             text: "Aldım"
             bg: [1, 1, 1, 1]
@@ -440,8 +401,7 @@ KV = '''
             selected_bg: [0.55, 0.8, 0.6, 1]
             selected_text_color: [1, 1, 1, 1]
             on_release:
-                app.record_medicine_action(root, "taken")
-
+                app.root.get_screen('dashboard').record_medicine_action(root, "taken")
         ActionBtn:
             text: "Atladım"
             bg: [1, 1, 1, 1]
@@ -450,24 +410,25 @@ KV = '''
             selected_bg: root.btn_color
             selected_text_color: [1, 1, 1, 1]
             on_release:
-                app.record_medicine_action(root, "skipped")
+                app.root.get_screen('dashboard').record_medicine_action(root, "skipped")
 
-        MDCard:
-            radius: [18,]
-            md_bg_color: [1, 1, 1, 0.5]
-            elevation: 0
-            padding: ["10dp", 0]
-            MDBoxLayout:
-                MDLabel:
-                    text: root.note
-                    font_size: "9sp"
-                    bold: True
-                MDIcon:
-                    icon: "chevron-down"
-                    font_size: "16sp"
-                    pos_hint: {"center_y": .5}
+    MDCard:
+        radius: [18,]
+        md_bg_color: [1, 1, 1, 0.5]
+        elevation: 0
+        padding: ["10dp", 0]
+        MDBoxLayout:
+            MDLabel:
+                text: root.note
+                font_size: "9sp"
+                bold: True
+            MDIcon:
+                icon: "chevron-down"
+                font_size: "16sp"
+                pos_hint: {"center_y": .5}
 
-MDScreen:
+<DashboardEkrani>:
+    name: "dashboard"
     md_bg_color: [1, 1, 1, 1]
 
     MDBoxLayout:
@@ -478,11 +439,16 @@ MDScreen:
             height: "70dp"
             padding: ["18dp", "8dp", "20dp", "8dp"]
             spacing: "6dp"
+            
+            # --- PROFİL BUTONU DÜZENLENDİ ---
             MDIconButton:
                 icon: "account-circle"
+                on_release: root.open_profile() # Artık Düzenleme Ekranına gidecek
+            # --------------------------------
+            
             Widget:
             Image:
-                source: "logo_mor.png"
+                source: "assets/logo_mor.png"
                 size_hint: None, None
                 size: "45dp", "45dp"
                 allow_stretch: True
@@ -490,7 +456,7 @@ MDScreen:
             Widget:
             MDIconButton:
                 icon: "cog"
-                on_release: app.open_settings()
+                on_release: root.open_settings()
 
         MDScrollView:
             bar_width: 0
@@ -606,7 +572,7 @@ MDScreen:
                         spacing: "12dp"
 
     MDFloatLayout:
-        # MENÜ KARTI (ANİMASYONLU)
+        # MENÜ KARTI
         MDCard:
             id: menu_card
             size_hint: None, None
@@ -637,7 +603,7 @@ MDScreen:
                     md_bg_color: [0.5, 0.3, 0.9, 1]
                     font_size: "15sp"
                     bold: True
-                    on_release: app.button_callback("İlaç Ekle")
+                    on_release: root.menu_action("arti_butonu")
                 
                 MDFillRoundFlatButton:
                     text: "Alarm ekle"
@@ -645,7 +611,7 @@ MDScreen:
                     md_bg_color: [0.5, 0.3, 0.9, 1]
                     font_size: "15sp"
                     bold: True
-                    on_release: app.button_callback("Alarm Ekle")
+                    on_release: root.menu_action("alarm_ekle")
                 
                 MDFillRoundFlatButton:
                     text: "Tahlil ekle"
@@ -653,9 +619,9 @@ MDScreen:
                     md_bg_color: [0.5, 0.3, 0.9, 1]
                     font_size: "15sp"
                     bold: True
-                    on_release: app.button_callback("Tahlil Ekle")
+                    on_release: root.menu_action("tahlil_ekle")
 
-        # ALT NAVİGASYON BARI (SABİTLENDİ)
+        # ALT NAVİGASYON BARI
         MDCard:
             size_hint: 0.95, None
             height: "70dp"
@@ -671,15 +637,15 @@ MDScreen:
                     theme_icon_color: "Custom"
                     icon_color: [0.5, 0.3, 0.9, 1]
                     pos_hint: {"center_y": .5}
-                    on_release: app.nav_action("home")
+                    on_release: root.nav_action("dashboard")
                 MDIconButton:
                     icon: "calendar-month-outline"
                     pos_hint: {"center_y": .5}
-                    on_release: app.nav_action("calendar")
+                    on_release: root.nav_action("takvim")
                 MDIconButton:
                     icon: "chart-line"
                     pos_hint: {"center_y": .5}
-                    on_release: app.nav_action("chart")
+                    on_release: root.nav_action("grafik")
 
         # ARTI BUTONU
         MDIconButton:
@@ -692,24 +658,23 @@ MDScreen:
             theme_icon_color: "Custom"
             icon_color: [1, 1, 1, 1]
             elevation: 10
-            on_release: app.toggle_menu()
-
+            on_release: root.toggle_menu()
 '''
 
+Builder.load_string(KV)
 
-class ThyroidApp(MDApp):
+class DashboardEkrani(MDScreen):
     menu_open = BooleanProperty(False)
     medicines = ListProperty([])
 
-    def build(self):
-        self.theme_cls.material_style = "M3"
-        self.title = "Tiroidim"
-        root = Builder.load_string(KV)
-        self.week_cal = root.ids.week_cal
-        self.medicines_list = root.ids.medicines_list
-        self.empty_meds = root.ids.empty_meds
+    def on_enter(self, *args):
+        # Ekran her açıldığında çalışır
+        self.week_cal = self.ids.week_cal
+        self.medicines_list = self.ids.medicines_list
+        self.empty_meds = self.ids.empty_meds
+        
         self.week_cal.sync_today()
-        self.symptom_buttons = [w for w in root.walk() if isinstance(w, SymptomBtn)]
+        self.symptom_buttons = [w for w in self.walk() if isinstance(w, SymptomBtn)]
         self.medicine_cards = []
         self.day_moods = {}
         self.day_symptoms = {}
@@ -717,18 +682,17 @@ class ThyroidApp(MDApp):
         self.week_cal.bind(selected_idx=self.apply_day_state, days=self.apply_day_state)
 
         # Menü animasyon hedefi
-        self.menu_card = root.ids.menu_card
+        self.menu_card = self.ids.menu_card
         self.menu_target_h = dp(190)
 
         # Başlangıçta kapalı
         self.menu_card.height = 0
         self.menu_card.opacity = 0
         self.menu_card.disabled = True
+        
         self._schedule_midnight_refresh()
         self.refresh_medicines()
         self.apply_day_state()
-
-        return root
 
     def toggle_menu(self):
         self.menu_open = not self.menu_open
@@ -746,21 +710,24 @@ class ThyroidApp(MDApp):
     def nav_action(self, screen_name: str):
         if self.menu_open:
             self.toggle_menu()
-        print(f"Aksiyon: {screen_name}")
+        self.manager.current = screen_name
+
+    def menu_action(self, screen_name: str):
+        if self.menu_open:
+            self.toggle_menu()
+        self.manager.current = screen_name
 
     def open_settings(self):
-        # Şimdilik sadece buton callback'i: gerçek ayarlar ekranı arkadaşındaki projede.
-        # Burada bir pencere açmıyoruz ki sende kırılmasın.
         if self.menu_open:
             self.toggle_menu()
+        self.manager.current = "ayarlar"
 
-        print("Aksiyon: Ayarlar")
-
-    def button_callback(self, text):
-        print(f"Aksiyon: {text}")
-        # Menü açıksa animasyonla kapat
+    # --- YENİ EKLENEN PROFİL FONKSİYONU ---
+    def open_profile(self):
         if self.menu_open:
             self.toggle_menu()
+        self.manager.current = "duzenleme"
+    # --------------------------------------
 
     def _selected_date_key(self):
         return self.week_cal.get_selected_date().isoformat()
@@ -776,7 +743,8 @@ class ThyroidApp(MDApp):
             selected_set.add(btn.text)
         else:
             selected_set.discard(btn.text)
-        self.button_callback(btn.text)
+        
+        print(f"Semptom/Mod: {btn.text} ({'Seçildi' if btn.selected else 'Kaldırıldı'})")
 
     def record_medicine_action(self, card, action: str):
         if not card.medicine_id:
@@ -785,8 +753,8 @@ class ThyroidApp(MDApp):
         actions = self.day_medicine_actions.setdefault(date_key, {})
         actions[card.medicine_id] = action
         card.select_action(action)
-        label = "Aldındı" if action == "taken" else "Atlandı"
-        self.button_callback(f"{card.pill} {label}")
+        label = "Alındı" if action == "taken" else "Atlandı"
+        print(f"İlaç İşlemi: {card.pill} -> {label}")
 
     def apply_day_state(self, *_):
         date_key = self._selected_date_key()
@@ -801,16 +769,30 @@ class ThyroidApp(MDApp):
         for card in self.medicine_cards:
             card.selected_action = actions.get(card.medicine_id, "")
 
-    def set_medicines(self, medicines):
-        self.medicines = medicines
-        self.refresh_medicines()
-
     def refresh_medicines(self):
         self.medicines_list.clear_widgets()
         self.medicine_cards = []
         if not self.medicines:
             self.empty_meds.opacity = 1
             self.empty_meds.height = dp(40)
+            # Şimdilik örnek veri ekleyelim boş kalmasın
+            sample_data = [
+                {"time": "09:00", "pill": "Levotiron", "note": "Aç karnına", "bg": [0.9, 0.9, 1, 1]},
+                {"time": "14:00", "pill": "Vitamin D", "note": "Tok karnına", "bg": [1, 0.95, 0.8, 1]}
+            ]
+            self.empty_meds.opacity = 0
+            self.empty_meds.height = 0
+            for item in sample_data:
+                card = Factory.MedicineCard(
+                    time=item.get("time", ""),
+                    pill=item.get("pill", ""),
+                    note=item.get("note", ""),
+                    bg=item.get("bg", [1, 1, 1, 1]),
+                    btn_color=item.get("btn_color", [0.6, 0.6, 0.6, 1]),
+                    medicine_id=item.get("id", ""),
+                )
+                self.medicines_list.add_widget(card)
+                self.medicine_cards.append(card)
             return
 
         self.empty_meds.opacity = 0
@@ -839,7 +821,3 @@ class ThyroidApp(MDApp):
     def _midnight_refresh(self, *_):
         self.week_cal.sync_today()
         self._schedule_midnight_refresh()
-
-
-if __name__ == '__main__':
-    ThyroidApp().run()
