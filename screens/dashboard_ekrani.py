@@ -1,6 +1,6 @@
 import sys
 import os
-#kodunuzda hata çıkmaması için eklendi
+#kodunuzda hata çıkmaması için
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
@@ -15,7 +15,7 @@ from kivy.metrics import dp
 import datetime as _dt
 from database import Database
 
-# --- YARDIMCI SINIFLAR (Arkadaşının yazdığı özel kartlar) ---
+# --- YARDIMCI SINIFLAR (Arkadaşının yazdığı özel kartlar - DOKUNULMADI) ---
 class WeekCalendar(MDCard):
     days = ListProperty([])
     selected_idx = NumericProperty(0) # 0=Bugün
@@ -375,13 +375,13 @@ KV_DASHBOARD = '''
                     note: "Tok karnına"
                     bg: [1, 0.95, 0.8, 1]
 
-    # --- ALT MENÜ KARTI (Gizli) ---
+    # --- ALT MENÜ KARTI (Gizli - BURASI DÜZENLENDİ) ---
     MDCard:
         id: menu_card
         size_hint: None, None
         width: "200dp"
         height: "0dp" # Başlangıçta kapalı
-        pos_hint: {"right": .9, "bottom": .15}
+        pos_hint: {"x": .2, "y": .13}
         radius: [20, 20, 0, 20]
         md_bg_color: [1, 1, 1, 1]
         elevation: 4
@@ -390,17 +390,26 @@ KV_DASHBOARD = '''
         padding: "10dp"
         spacing: "10dp"
         
+        # 1. BUTON: İLAÇ EKLE
         MDFillRoundFlatButton:
             text: "İlaç Ekle"
             size_hint_x: 1
             md_bg_color: [0.5, 0.3, 0.9, 1]
-            on_release: root.menu_action("arti_butonu")
+            on_release: root.menu_action("arti_butonu") # Bu isim Main.py ile uyumlu
         
+        # 2. BUTON: ALARM EKLE
         MDFillRoundFlatButton:
-            text: "Grafikler"
+            text: "Alarm Ekle"
             size_hint_x: 1
             md_bg_color: [0.5, 0.3, 0.9, 1]
-            on_release: root.menu_action("grafik")
+            on_release: root.menu_action("alarm_ekle")
+        
+        # 3. BUTON: TAHLİL EKLE
+        MDFillRoundFlatButton:
+            text: "Tahlil Ekle"
+            size_hint_x: 1
+            md_bg_color: [0.5, 0.3, 0.9, 1]
+            on_release: root.menu_action("tahlil_ekle")
 
     # --- ALT SABİT BAR ---
     MDCard:
@@ -452,7 +461,8 @@ class DashboardEkrani(MDScreen):
         menu = self.ids.menu_card
         
         if self.menu_open:
-            Animation(height=dp(130), opacity=1, d=0.2).start(menu)
+            # Burayı dp(190) yaptık ki 3 buton sığsın
+            Animation(height=dp(190), opacity=1, d=0.2).start(menu)
         else:
             Animation(height=0, opacity=0, d=0.2).start(menu)
 
