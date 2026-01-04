@@ -10,7 +10,7 @@ KV_DISEASE = """
         orientation: "vertical"
         md_bg_color: 1, 0.95, 0.95, 1
         padding: "20dp"
-        spacing: "15dp"
+        spacing: "10dp"
 
         # Üst İlerleme Çizgileri
         MDBoxLayout:
