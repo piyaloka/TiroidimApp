@@ -45,7 +45,7 @@ KV_WELCOME = """
         orientation: "vertical"
         md_bg_color: 1, 1, 1, 1
         padding: "20dp"
-        spacing: "20dp"
+        spacing: "10dp"
 
         MDBoxLayout:
             size_hint_y: None
