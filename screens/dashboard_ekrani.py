@@ -6,6 +6,8 @@ from kivymd.uix.card import MDCard
 from kivy.config import Config
 from kivy.animation import Animation
 from kivy.metrics import dp
+from kivy.clock import Clock
+from kivy.factory import Factory
 
 import datetime as _dt
 import calendar as _cal
@@ -24,9 +26,7 @@ class WeekCalendar(MDCard):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = _dt.date.today()
-        self._start_date = self._start_date - _dt.timedelta(days=self._start_date.weekday())
-        self._rebuild()
+        self.sync_today()
 
     def _tr_dow(self, weekday: int) -> str:
         # Monday=0 .. Sunday=6
@@ -39,21 +39,30 @@ class WeekCalendar(MDCard):
         ][month - 1]
 
     def _rebuild(self):
-        self.days = []
-        # Label shows the month/year of the week start (good enough for UI mock)
-        self.month_label = f"{self._month_name_tr(self._start_date.month)} {self._start_date.year}"
-
+        days = []
         for i in range(7):
             d = self._start_date + _dt.timedelta(days=i)
-            self.days.append({
+            days.append({
                 "dow": self._tr_dow(d.weekday()),
                 "day": f"{d.day:02d}",
                 "is_weekend": d.weekday() >= 5,
             })
+        self.days = days
 
         # keep selection inside 0..6
         if self.selected_idx < 0 or self.selected_idx > 6:
             self.selected_idx = 0
+        self._update_month_label()
+
+    def _update_month_label(self):
+        selected_date = self._start_date + _dt.timedelta(days=self.selected_idx)
+        self.month_label = f"{self._month_name_tr(selected_date.month)} {selected_date.year}"
+
+    def sync_today(self):
+        today = _dt.date.today()
+        self._start_date = today - _dt.timedelta(days=today.weekday())
+        self.selected_idx = today.weekday()
+        self._rebuild()
 
     def prev_week(self):
         self._start_date = self._start_date - _dt.timedelta(days=7)
@@ -65,17 +74,25 @@ class WeekCalendar(MDCard):
 
     def select_day(self, idx: int):
         self.selected_idx = idx
+        self._update_month_label()
 
 
 class SymptomBtn(MDCard):
     text = StringProperty()
     icon = StringProperty()
+    selected = BooleanProperty(False)
+
+    def toggle_selected(self):
+        self.selected = not self.selected
 
 
 class ActionBtn(MDCard):
     text = StringProperty()
     bg = ListProperty([1, 1, 1, 1])
     text_color = ListProperty([0, 0, 0, 1])
+    selected = BooleanProperty(False)
+    selected_bg = ListProperty([1, 1, 1, 1])
+    selected_text_color = ListProperty([0, 0, 0, 1])
 
 
 class MedicineCard(MDCard):
@@ -84,6 +101,10 @@ class MedicineCard(MDCard):
     note = StringProperty()
     bg = ListProperty([1, 1, 1, 1])
     btn_color = ListProperty([1, 1, 1, 1])
+    selected_action = StringProperty("")
+
+    def select_action(self, action: str):
+        self.selected_action = action
 
 
 KV = '''
@@ -326,10 +347,12 @@ KV = '''
     size: "105dp", "40dp"
     radius: [20,]
     elevation: 0
-    md_bg_color: [0.96, 0.96, 0.98, 1]
+    md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected else [0.96, 0.96, 0.98, 1])
     ripple_behavior: True
     ripple_color: [0.5, 0.3, 0.9, 0.18]
-    on_release: app.button_callback(root.text)
+    on_release:
+        root.toggle_selected()
+        app.button_callback(root.text)
     MDBoxLayout:
         padding: ["10dp", 0]
         spacing: "5dp"
@@ -337,19 +360,21 @@ KV = '''
             icon: root.icon
             font_size: "18sp"
             theme_text_color: "Custom"
-            text_color: [0.5, 0.3, 0.9, 1]
+            text_color: ([0.25, 0.12, 0.5, 1] if root.selected else [0.5, 0.3, 0.9, 1])
             pos_hint: {"center_y": .5}
         MDLabel:
             text: root.text
             font_size: "10sp"
             bold: True
+            theme_text_color: "Custom"
+            text_color: ([0.25, 0.12, 0.5, 1] if root.selected else [0, 0, 0, 0.8])
 
 <ActionBtn>:
     size_hint: None, None
     size: "65dp", "38dp"
     radius: [18,]
     elevation: 0
-    md_bg_color: root.bg
+    md_bg_color: (root.selected_bg if root.selected else root.bg)
     ripple_behavior: True
     ripple_color: [0.2, 0.2, 0.2, 0.15]
     MDLabel:
@@ -358,7 +383,7 @@ KV = '''
         font_size: "10sp"
         bold: True
         theme_text_color: "Custom"
-        text_color: root.text_color
+        text_color: (root.selected_text_color if root.selected else root.text_color)
 
 <MedicineCard>:
     orientation: "vertical"
@@ -407,13 +432,23 @@ KV = '''
             text: "Aldım"
             bg: [1, 1, 1, 1]
             text_color: [0.6, 0.6, 0.6, 1]
-            on_release: app.button_callback(f"{root.pill} Aldındı")
+            selected: root.selected_action == "taken"
+            selected_bg: [0.55, 0.8, 0.6, 1]
+            selected_text_color: [1, 1, 1, 1]
+            on_release:
+                root.select_action("taken")
+                app.button_callback(f"{root.pill} Aldındı")
 
         ActionBtn:
             text: "Atladım"
-            bg: root.btn_color
-            text_color: [1, 1, 1, 1]
-            on_release: app.button_callback(f"{root.pill} Atlandı")
+            bg: [1, 1, 1, 1]
+            text_color: [0.6, 0.6, 0.6, 1]
+            selected: root.selected_action == "skipped"
+            selected_bg: root.btn_color
+            selected_text_color: [1, 1, 1, 1]
+            on_release:
+                root.select_action("skipped")
+                app.button_callback(f"{root.pill} Atlandı")
 
         MDCard:
             radius: [18,]
@@ -465,11 +500,12 @@ MDScreen:
                 spacing: "20dp"
 
                 MDLabel:
-                    text: app.month_label
+                    text: root.ids.week_cal.month_label
                     bold: True
                     font_style: "H6"
                 
                 WeekCalendar:
+                    id: week_cal
                     size_hint_x: 1
 
                 MDLabel:
@@ -528,30 +564,32 @@ MDScreen:
                     text: "Hatırlatıcı"
                     bold: True
                 
-                MedicineCard:
-                    time: "09:00"
-                    pill: "Levotiron"
-                    note: "Sabah / Aç"
-                    bg: [0.9, 0.88, 1, 1]
-                    btn_color: [0.6, 0.5, 0.9, 1]
-                MedicineCard:
-                    time: "14:30"
-                    pill: "Parol"
-                    note: "Yemekten sonra"
-                    bg: [1, 1, 0.85, 1]
-                    btn_color: [0.9, 0.8, 0.3, 1]
-                MedicineCard:
-                    time: "17:00"
-                    pill: "Euthyrox"
-                    note: "Yemekten önce"
-                    bg: [0.92, 0.96, 0.88, 1]
-                    btn_color: [0.75, 0.85, 0.6, 1]
-                MedicineCard:
-                    time: "21:00"
-                    pill: "Levothyrox"
-                    note: "Akşam"
-                    bg: [1, 0.92, 0.92, 1]
-                    btn_color: [1, 0.7, 0.7, 1]
+                MDBoxLayout:
+                    orientation: "vertical"
+                    adaptive_height: True
+                    spacing: "12dp"
+
+                    MDAnchorLayout:
+                        id: empty_meds
+                        size_hint_y: None
+                        height: "0dp"
+                        opacity: 0
+                        padding: ["12dp", "8dp", "12dp", "8dp"]
+                        anchor_x: "center"
+                        anchor_y: "center"
+                        MDLabel:
+                            text: "Henüz ilaç eklenmedi"
+                            halign: "center"
+                            valign: "middle"
+                            text_size: self.size
+                            theme_text_color: "Custom"
+                            text_color: [0, 0, 0, 0.5]
+
+                    MDBoxLayout:
+                        id: medicines_list
+                        orientation: "vertical"
+                        adaptive_height: True
+                        spacing: "12dp"
 
     MDFloatLayout:
         # MENÜ KARTI (ANİMASYONLU)
@@ -647,14 +685,16 @@ MDScreen:
 
 class ThyroidApp(MDApp):
     menu_open = BooleanProperty(False)
-    month_label = StringProperty("")
+    medicines = ListProperty([])
 
     def build(self):
         self.theme_cls.material_style = "M3"
         self.title = "Tiroidim"
         root = Builder.load_string(KV)
-        today = _dt.date.today()
-        self.month_label = f"{self._month_name_tr(today.month)} {today.year}"
+        self.week_cal = root.ids.week_cal
+        self.medicines_list = root.ids.medicines_list
+        self.empty_meds = root.ids.empty_meds
+        self.week_cal.sync_today()
 
         # Menü animasyon hedefi
         self.menu_card = root.ids.menu_card
@@ -664,14 +704,10 @@ class ThyroidApp(MDApp):
         self.menu_card.height = 0
         self.menu_card.opacity = 0
         self.menu_card.disabled = True
+        self._schedule_midnight_refresh()
+        self.refresh_medicines()
 
         return root
-
-    def _month_name_tr(self, month: int) -> str:
-        return [
-            "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-            "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
-        ][month - 1]
 
     def toggle_menu(self):
         self.menu_open = not self.menu_open
@@ -704,6 +740,39 @@ class ThyroidApp(MDApp):
         # Menü açıksa animasyonla kapat
         if self.menu_open:
             self.toggle_menu()
+
+    def set_medicines(self, medicines):
+        self.medicines = medicines
+        self.refresh_medicines()
+
+    def refresh_medicines(self):
+        self.medicines_list.clear_widgets()
+        if not self.medicines:
+            self.empty_meds.opacity = 1
+            self.empty_meds.height = dp(40)
+            return
+
+        self.empty_meds.opacity = 0
+        self.empty_meds.height = 0
+        for item in self.medicines:
+            card = Factory.MedicineCard(
+                time=item.get("time", ""),
+                pill=item.get("pill", ""),
+                note=item.get("note", ""),
+                bg=item.get("bg", [1, 1, 1, 1]),
+                btn_color=item.get("btn_color", [0.6, 0.6, 0.6, 1]),
+            )
+            self.medicines_list.add_widget(card)
+
+    def _schedule_midnight_refresh(self):
+        now = _dt.datetime.now()
+        tomorrow = (now + _dt.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        delay = (tomorrow - now).total_seconds()
+        Clock.schedule_once(self._midnight_refresh, delay)
+
+    def _midnight_refresh(self, *_):
+        self.week_cal.sync_today()
+        self._schedule_midnight_refresh()
 
 
 if __name__ == '__main__':
