@@ -364,25 +364,65 @@ class AlarmEkrani(BaseMenuScreen):
         vakit = self.ids.a_vakit_durum.ids.text_field.text
         saat = self.ids.a_time_full.ids.text_field.text
         
-       if ilac in ["Seçiniz", "Önce İlaç Ekleyin"]:
-           print("Hata: İlaç seçilmedi")
-           return
+        if ilac in ["Seçiniz", "Önce İlaç Ekleyin"]:
+            print("Hata: İlaç seçilmedi")
+            return
             
-       print(f"Kaydediliyor: {ilac}, {adet} Adet, {gun} Gün, Vakit: {vakit}, Saat: {saat}")
-       self.manager.current = "dashboard" 
+        print(f"Kaydediliyor: {ilac}, {adet} Adet, {gun} Gün, Vakit: {vakit}, Saat: {saat}")
+        self.manager.current = "dashboard" 
 
 
 # --- 3. SINIF: TAHLİL EKLEME ---
 class TahlilEkrani(BaseMenuScreen):
+    _last_len = 0  
+
+    def on_enter(self, *args):
+        self.ids.t_val.ids.text_field.bind(text=self.auto_dot)
+
+    def auto_dot(self, instance, value):
+        curr_len = len(value)
+        if curr_len < self._last_len:
+            self._last_len = curr_len
+            return
+
+        raw_val = value.replace('.', '')
+        if len(raw_val) >= 2 and '.' not in value:
+            new_text = f"{raw_val[0]}.{raw_val[1:]}"
+            instance.text = new_text
+            # İmleci sona taşı
+            instance.cursor = (len(new_text), 0)
+
+        self._last_len = len(instance.text)
+
     def open_tahlil_menu(self):
         tahliller = ["TSH", "Serbest T3", "Serbest T4", "Anti-TPO"]
-        self.open_dropdown(self.ids.t_name.ids.text_field, tahliller, self.set_val)
+        self.open_dropdown(self.ids.t_name.ids.text_field, tahliller, self.select_tahlil_and_unit)
+    
+    def select_tahlil_and_unit(self, tahlil_ad, caller):
+        caller.text = tahlil_ad
+        if tahlil_ad == "TSH":
+            self.ids.t_unit.ids.text_field.text = "mIU/L"
+        elif "T3" in tahlil_ad or "T4" in tahlil_ad:
+            self.ids.t_unit.ids.text_field.text = "ng/dL"
+        else:
+            self.ids.t_unit.ids.text_field.text = "IU/mL"
+        
+        if self.menu:
+            self.menu.dismiss()
+
+    def open_birim_menu(self):
+        birimler = ["mIU/L", "ng/dL", "pg/mL", "pmol/L", "IU/mL"]
+        self.open_dropdown(self.ids.t_unit.ids.text_field, birimler, self.set_val)
 
     def kaydet(self):
         ad = self.ids.t_name.ids.text_field.text
         deger = self.ids.t_val.ids.text_field.text
+        birim = self.ids.t_unit.ids.text_field.text
+        tarih = self.ids.t_date.ids.text_field.text
+    
+        if ad == "Seçiniz" or deger in ["", "Değer girin"]:
+            print("Lütfen tahlil adı ve değerini kontrol edin!")
+            return
         
-        if ad != "Seçiniz" and deger != "":
-            print(f"Tahlil Kaydedildi: {ad} - {deger}")
-            self.manager.current = "dashboard"
-
+        print(f"Tahlil Kaydedildi: {ad} - {deger} {birim} - Tarih: {tarih}")
+        self.manager.current = "dashboard"
