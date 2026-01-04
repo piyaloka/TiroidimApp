@@ -94,7 +94,7 @@ KV_DISEASE = """
                 font_size: "18sp"
                 md_bg_color: 1, 0.7, 0.7, 1
                 text_color: 1, 1, 1, 1
-                size_hint_x: 1
+                size_hint_x: 0.9
                 on_release: root.kaydi_bitir()
 """
 
