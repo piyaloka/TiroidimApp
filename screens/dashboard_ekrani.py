@@ -76,10 +76,14 @@ class WeekCalendar(MDCard):
         self.selected_idx = idx
         self._update_month_label()
 
+    def get_selected_date(self):
+        return self._start_date + _dt.timedelta(days=self.selected_idx)
+
 
 class SymptomBtn(MDCard):
     text = StringProperty()
     icon = StringProperty()
+    group = StringProperty("")
     selected = BooleanProperty(False)
 
     def toggle_selected(self):
@@ -101,6 +105,7 @@ class MedicineCard(MDCard):
     note = StringProperty()
     bg = ListProperty([1, 1, 1, 1])
     btn_color = ListProperty([1, 1, 1, 1])
+    medicine_id = StringProperty("")
     selected_action = StringProperty("")
 
     def select_action(self, action: str):
@@ -351,8 +356,7 @@ KV = '''
     ripple_behavior: True
     ripple_color: [0.5, 0.3, 0.9, 0.18]
     on_release:
-        root.toggle_selected()
-        app.button_callback(root.text)
+        app.toggle_symptom(root)
     MDBoxLayout:
         padding: ["10dp", 0]
         spacing: "5dp"
@@ -436,8 +440,7 @@ KV = '''
             selected_bg: [0.55, 0.8, 0.6, 1]
             selected_text_color: [1, 1, 1, 1]
             on_release:
-                root.select_action("taken")
-                app.button_callback(f"{root.pill} Aldındı")
+                app.record_medicine_action(root, "taken")
 
         ActionBtn:
             text: "Atladım"
@@ -447,8 +450,7 @@ KV = '''
             selected_bg: root.btn_color
             selected_text_color: [1, 1, 1, 1]
             on_release:
-                root.select_action("skipped")
-                app.button_callback(f"{root.pill} Atlandı")
+                app.record_medicine_action(root, "skipped")
 
         MDCard:
             radius: [18,]
@@ -518,21 +520,27 @@ MDScreen:
                     SymptomBtn:
                         text: "Sakin"
                         icon: "emoticon-happy-outline"
+                        group: "mood"
                     SymptomBtn:
                         text: "Mutlu"
                         icon: "emoticon-outline"
+                        group: "mood"
                     SymptomBtn:
                         text: "Enerjik"
                         icon: "lightning-bolt-outline"
+                        group: "mood"
                     SymptomBtn:
                         text: "Depresif"
                         icon: "emoticon-sad-outline"
+                        group: "mood"
                     SymptomBtn:
                         text: "Sinirli"
                         icon: "emoticon-angry-outline"
+                        group: "mood"
                     SymptomBtn:
                         text: "Yorgun"
                         icon: "emoticon-confused-outline"
+                        group: "mood"
 
                 MDLabel:
                     text: "Bugün hangi semptomları yaşadınız?"
@@ -544,21 +552,27 @@ MDScreen:
                     SymptomBtn:
                         text: "Kas Ağrısı"
                         icon: "bone"
+                        group: "symptom"
                     SymptomBtn:
                         text: "Öksürük"
                         icon: "lungs"
+                        group: "symptom"
                     SymptomBtn:
                         text: "Baş Ağrısı"
                         icon: "head-cog-outline"
+                        group: "symptom"
                     SymptomBtn:
                         text: "Mide Bulantısı"
                         icon: "stomach"
+                        group: "symptom"
                     SymptomBtn:
                         text: "Uykusuzluk"
                         icon: "sleep-off"
+                        group: "symptom"
                     SymptomBtn:
                         text: "Eklem Ağrısı"
                         icon: "human-handsup"
+                        group: "symptom"
 
                 MDLabel:
                     text: "Hatırlatıcı"
@@ -695,6 +709,12 @@ class ThyroidApp(MDApp):
         self.medicines_list = root.ids.medicines_list
         self.empty_meds = root.ids.empty_meds
         self.week_cal.sync_today()
+        self.symptom_buttons = [w for w in root.walk() if isinstance(w, SymptomBtn)]
+        self.medicine_cards = []
+        self.day_moods = {}
+        self.day_symptoms = {}
+        self.day_medicine_actions = {}
+        self.week_cal.bind(selected_idx=self.apply_day_state, days=self.apply_day_state)
 
         # Menü animasyon hedefi
         self.menu_card = root.ids.menu_card
@@ -706,6 +726,7 @@ class ThyroidApp(MDApp):
         self.menu_card.disabled = True
         self._schedule_midnight_refresh()
         self.refresh_medicines()
+        self.apply_day_state()
 
         return root
 
@@ -741,12 +762,52 @@ class ThyroidApp(MDApp):
         if self.menu_open:
             self.toggle_menu()
 
+    def _selected_date_key(self):
+        return self.week_cal.get_selected_date().isoformat()
+
+    def toggle_symptom(self, btn):
+        btn.toggle_selected()
+        date_key = self._selected_date_key()
+        if btn.group == "mood":
+            selected_set = self.day_moods.setdefault(date_key, set())
+        else:
+            selected_set = self.day_symptoms.setdefault(date_key, set())
+        if btn.selected:
+            selected_set.add(btn.text)
+        else:
+            selected_set.discard(btn.text)
+        self.button_callback(btn.text)
+
+    def record_medicine_action(self, card, action: str):
+        if not card.medicine_id:
+            card.medicine_id = f"{card.pill}|{card.time}|{card.note}"
+        date_key = self._selected_date_key()
+        actions = self.day_medicine_actions.setdefault(date_key, {})
+        actions[card.medicine_id] = action
+        card.select_action(action)
+        label = "Aldındı" if action == "taken" else "Atlandı"
+        self.button_callback(f"{card.pill} {label}")
+
+    def apply_day_state(self, *_):
+        date_key = self._selected_date_key()
+        moods = self.day_moods.get(date_key, set())
+        symptoms = self.day_symptoms.get(date_key, set())
+        for btn in self.symptom_buttons:
+            if btn.group == "mood":
+                btn.selected = btn.text in moods
+            elif btn.group == "symptom":
+                btn.selected = btn.text in symptoms
+        actions = self.day_medicine_actions.get(date_key, {})
+        for card in self.medicine_cards:
+            card.selected_action = actions.get(card.medicine_id, "")
+
     def set_medicines(self, medicines):
         self.medicines = medicines
         self.refresh_medicines()
 
     def refresh_medicines(self):
         self.medicines_list.clear_widgets()
+        self.medicine_cards = []
         if not self.medicines:
             self.empty_meds.opacity = 1
             self.empty_meds.height = dp(40)
@@ -761,8 +822,13 @@ class ThyroidApp(MDApp):
                 note=item.get("note", ""),
                 bg=item.get("bg", [1, 1, 1, 1]),
                 btn_color=item.get("btn_color", [0.6, 0.6, 0.6, 1]),
+                medicine_id=item.get("id", ""),
             )
+            if not card.medicine_id:
+                card.medicine_id = f"{card.pill}|{card.time}|{card.note}"
             self.medicines_list.add_widget(card)
+            self.medicine_cards.append(card)
+        self.apply_day_state()
 
     def _schedule_midnight_refresh(self):
         now = _dt.datetime.now()
