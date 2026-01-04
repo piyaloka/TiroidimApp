@@ -91,7 +91,7 @@ KV_DISEASE = """
 
             MDFillRoundFlatButton:
                 text: "KAYDI TAMAMLA"
-                font_size: "18sp"
+                font_size: "20sp"
                 md_bg_color: 1, 0.7, 0.7, 1
                 text_color: 1, 1, 1, 1
                 size_hint_x: 0.9
