@@ -9,13 +9,14 @@ import calendar
 
 from database import Database
 
+
 KV_TAKVIM = """
 <DayButton>:
     orientation: "vertical"
     size_hint: None, None
     size: "42dp", "68dp"
     radius: [15]
-    md_bg_color: (0.42, 0, 0.95, 0.1) if self.selected else (1, 1, 1, 0)
+    md_bg_color: (0.42, 0, 0.95, 0.15) if self.selected else (1, 1, 1, 0)
     padding: "4dp"
     spacing: "2dp"
 
@@ -34,6 +35,7 @@ KV_TAKVIM = """
         theme_text_color: "Custom"
         text_color: (0.42, 0, 0.95, 1)
 
+
 <IlacKartKutucugu@MDCard>:
     text: ""
     size_hint: None, None
@@ -50,6 +52,7 @@ KV_TAKVIM = """
             icon: "chevron-down"
             font_size: "16sp"
 
+
 <TakvimEkrani>:
     MDFloatLayout:
         md_bg_color: 1, 1, 1, 1
@@ -58,7 +61,7 @@ KV_TAKVIM = """
             orientation: "vertical"
             pos_hint: {"top": 1}
 
-            # Üst Bar: Profil, Logo ve Ayarlar
+            # ÜST BAR
             MDBoxLayout:
                 size_hint_y: None
                 height: "70dp"
@@ -85,7 +88,7 @@ KV_TAKVIM = """
                 size_hint_y: None
                 height: "40dp"
 
-            # Takvim Alanı
+            # TAKVİM
             MDCard:
                 size_hint: 0.9, None
                 height: "280dp"
@@ -107,7 +110,6 @@ KV_TAKVIM = """
                 size_hint_y: None
                 height: "50dp"
 
-            # İlaç Listesi (İlaç yoksa boş kalır)
             ScrollView:
                 MDBoxLayout:
                     id: ilac_listesi
@@ -116,14 +118,14 @@ KV_TAKVIM = """
                     padding: ["20dp", 0, "20dp", "100dp"]
                     spacing: "15dp"
 
-        # Ekleme (Artı) Butonu
+        # 🔗 MEVCUT + BUTONU (SADECE ENTEGRE EDİLDİ)
         MDFloatingActionButton:
             icon: "plus"
             md_bg_color: 0.42, 0, 0.95, 1
             pos_hint: {"center_x": .85, "center_y": .15}
-            on_release: app.root.current = "arti_butonu"
+            on_release: root.arti_butonuna_git()
 
-        # Alt Navigasyon Barı
+        # ALT NAV
         MDCard:
             size_hint: 0.9, None
             height: "65dp"
@@ -147,6 +149,7 @@ KV_TAKVIM = """
                     on_release: app.root.current = "grafik"
 """
 
+
 class DayButton(MDCard, ButtonBehavior):
     def __init__(self, tarih, selected, icon, is_weekend, **kwargs):
         super().__init__(**kwargs)
@@ -156,25 +159,31 @@ class DayButton(MDCard, ButtonBehavior):
         self.status_icon = icon
         self.is_weekend = is_weekend
 
+
 class TakvimEkrani(MDScreen):
+
     def on_enter(self):
         self.db = Database()
         self.secili_tarih = date.today()
         self.takvimi_ciz()
         self.gun_detayi_yukle(self.secili_tarih)
 
+    # ➕ BUTON ENTEGRASYONU
+    def arti_butonuna_git(self):
+        self.manager.current = "arti_butonu"
+
     def takvimi_ciz(self):
         grid = self.ids.calendar_grid
         grid.clear_widgets()
 
-        # Gün Başlıkları
         for g in ["Pz", "Sa", "Ça", "Pe", "Cu", "Ct", "Pa"]:
-            grid.add_widget(MDLabel(text=g, halign="center", font_style="Caption", theme_text_color="Hint"))
+            grid.add_widget(
+                MDLabel(text=g, halign="center", font_style="Caption", theme_text_color="Hint")
+            )
 
         yil, ay = self.secili_tarih.year, self.secili_tarih.month
         ilk_gun, gun_sayisi = calendar.monthrange(yil, ay)
-        
-        # Veritabanında herhangi bir ilaç tanımlı mı kontrol et
+
         kullanici_ilaclari = self.db.kullanici_ilaclarini_getir()
 
         for _ in range(ilk_gun):
@@ -182,14 +191,12 @@ class TakvimEkrani(MDScreen):
 
         for gun in range(1, gun_sayisi + 1):
             tarih = date(yil, ay, gun)
-            
-            # İlaç planı varsa ikonları hesapla
+
             if kullanici_ilaclari:
                 ikon_data = self.db.gun_ikonunu_hesapla(str(tarih))
-                # Duruma göre ikon ata: ✅ (Alındı), ❌ (Atladı) veya · (Plan var ama işlem yok)
                 ikon = ikon_data["icon"] if ikon_data["status"] != "NO_PLAN" else "·"
             else:
-                ikon = "" # İlaç eklenmemişse alt kısım tamamen boş
+                ikon = ""
 
             btn = DayButton(
                 tarih=tarih,
@@ -208,33 +215,46 @@ class TakvimEkrani(MDScreen):
     def gun_detayi_yukle(self, tarih):
         box = self.ids.ilac_listesi
         box.clear_widgets()
-        
-        # Seçili günün ilaç kartlarını veritabanından getir
+
         kartlar = self.db.dashboard_kartlarini_getir(str(tarih))
 
         if not kartlar:
-            # İlaç eklenmemişse burası boş gözükür
             return
 
         for k in kartlar:
-            # Duruma göre renk (Yeşil: Alındı, Sarı: Atlandı/Bekliyor)
             bg = (0.88, 0.94, 0.75, 1) if k["taken"] else (1, 1, 0.9, 1)
-            
+
             card = MDCard(
-                orientation="vertical", size_hint_y=None, height="120dp",
-                radius=[20], md_bg_color=bg, padding="15dp", elevation=0
+                orientation="vertical",
+                size_hint_y=None,
+                height="120dp",
+                radius=[20],
+                md_bg_color=bg,
+                padding="15dp",
+                elevation=0
             )
-            
+
             card.add_widget(MDLabel(text=k["ilac_adi"], bold=True, font_style="H6"))
-            card.add_widget(MDLabel(text=str(tarih.strftime("%d/%m/%Y")), font_style="Caption"))
-            
-            # Seçim kutucukları (Dozaj, adet, gün)
-            row = MDBoxLayout(spacing="10dp", size_hint_y=None, height="40dp")
-            row.add_widget(Builder.template('IlacKartKutucugu', text=k["doz"], width=dp(110)))
-            row.add_widget(Builder.template('IlacKartKutucugu', text="adet", width=dp(70)))
-            row.add_widget(Builder.template('IlacKartKutucugu', text="gün", width=dp(70)))
-            
-            card.add_widget(row)
+            card.add_widget(MDLabel(text=tarih.strftime("%d/%m/%Y"), font_style="Caption"))
+
+            row = Builder.template("IlacKartKutucugu", text=k["doz"], width=dp(110))
+            row2 = Builder.template("IlacKartKutucugu", text="adet", width=dp(70))
+            row3 = Builder.template("IlacKartKutucugu", text="gün", width=dp(70))
+
+            line = Builder.load_string("""
+MDBoxLayout:
+    spacing: "10dp"
+    size_hint_y: None
+    height: "40dp"
+""")
+
+            line.add_widget(row)
+            line.add_widget(row2)
+            line.add_widget(row3)
+
+            card.add_widget(line)
             box.add_widget(card)
 
+
 Builder.load_string(KV_TAKVIM)
+
