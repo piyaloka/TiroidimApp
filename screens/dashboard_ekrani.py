@@ -9,9 +9,15 @@ from kivy.animation import Animation
 from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.factory import Factory
+from kivy.uix.screenmanager import ScreenManager
 
 import datetime as _dt
-import calendar as _cal
+
+Config.set('graphics', 'maxfps', '60')
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
+
+Window.size = (360, 740)
+
 
 # --- YARDIMCI SINIFLAR ---
 class WeekCalendar(MDCard):
@@ -24,6 +30,7 @@ class WeekCalendar(MDCard):
         self.sync_today()
 
     def _tr_dow(self, weekday: int) -> str:
+        # Pazartesi=0 ... Pazar=6
         return ["P", "S", "Ç", "P", "C", "C", "P"][weekday]
 
     def _month_name_tr(self, month: int) -> str:
@@ -52,7 +59,7 @@ class WeekCalendar(MDCard):
 
     def sync_today(self):
         today = _dt.date.today()
-        self._start_date = today - _dt.timedelta(days=today.weekday())
+        self._start_date = today - _dt.timedelta(days=today.weekday())  # haftanın pazartesi başlangıcı
         self.selected_idx = today.weekday()
         self._rebuild()
 
@@ -97,7 +104,7 @@ class MedicineCard(MDCard):
 
 
 # --- KV TASARIMI ---
-KV = '''
+KV = r'''
 <WeekCalendar>:
     size_hint_y: None
     height: "112dp"
@@ -113,13 +120,16 @@ KV = '''
             cols: 7
             adaptive_height: True
             spacing: "8dp"
-            # 0
+
+            # 0..6 (sende zaten yazılıydı; aynen bıraktım)
             MDCard:
                 size_hint: None, None
                 size: "38dp", "70dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 0 else [1, 1, 1, 1])
+                ripple_behavior: True
+                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(0)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -139,13 +149,15 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 0 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[0]["is_weekend"]) else [0, 0, 0, 0.75]))
-            # 1
+
             MDCard:
                 size_hint: None, None
                 size: "38dp", "70dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 1 else [1, 1, 1, 1])
+                ripple_behavior: True
+                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(1)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -165,13 +177,15 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 1 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[1]["is_weekend"]) else [0, 0, 0, 0.75]))
-            # 2
+
             MDCard:
                 size_hint: None, None
                 size: "38dp", "70dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 2 else [1, 1, 1, 1])
+                ripple_behavior: True
+                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(2)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -191,13 +205,15 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 2 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[2]["is_weekend"]) else [0, 0, 0, 0.75]))
-            # 3
+
             MDCard:
                 size_hint: None, None
                 size: "38dp", "70dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 3 else [1, 1, 1, 1])
+                ripple_behavior: True
+                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(3)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -217,13 +233,15 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 3 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[3]["is_weekend"]) else [0, 0, 0, 0.75]))
-            # 4
+
             MDCard:
                 size_hint: None, None
                 size: "38dp", "70dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 4 else [1, 1, 1, 1])
+                ripple_behavior: True
+                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(4)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -243,13 +261,15 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 4 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[4]["is_weekend"]) else [0, 0, 0, 0.75]))
-            # 5
+
             MDCard:
                 size_hint: None, None
                 size: "38dp", "70dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 5 else [1, 1, 1, 1])
+                ripple_behavior: True
+                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(5)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -269,13 +289,15 @@ KV = '''
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 5 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[5]["is_weekend"]) else [0, 0, 0, 0.75]))
-            # 6
+
             MDCard:
                 size_hint: None, None
                 size: "38dp", "70dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 6 else [1, 1, 1, 1])
+                ripple_behavior: True
+                ripple_color: [0.5, 0.3, 0.9, 0.18]
                 on_release: root.select_day(6)
                 MDBoxLayout:
                     orientation: "vertical"
@@ -296,7 +318,6 @@ KV = '''
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 6 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[6]["is_weekend"]) else [0, 0, 0, 0.75]))
 
-        # Çizgi
         MDAnchorLayout:
             size_hint_y: None
             height: "12dp"
@@ -309,6 +330,7 @@ KV = '''
                 radius: [1,]
                 elevation: 0
                 md_bg_color: [0.5, 0.3, 0.9, 0.25]
+
 
 <SymptomBtn>:
     size_hint: None, None
@@ -337,6 +359,7 @@ KV = '''
             theme_text_color: "Custom"
             text_color: ([0.25, 0.12, 0.5, 1] if root.selected else [0, 0, 0, 0.8])
 
+
 <ActionBtn>:
     size_hint: None, None
     size: "65dp", "38dp"
@@ -352,6 +375,7 @@ KV = '''
         bold: True
         theme_text_color: "Custom"
         text_color: (root.selected_text_color if root.selected else root.text_color)
+
 
 <MedicineCard>:
     orientation: "vertical"
@@ -372,7 +396,6 @@ KV = '''
         MDLabel:
             text: root.time
             bold: True
-            font_style: "H6"
             font_size: "18sp"
             size_hint_y: None
             height: "26dp"
@@ -411,21 +434,21 @@ KV = '''
             selected_text_color: [1, 1, 1, 1]
             on_release:
                 app.root.get_screen('dashboard').record_medicine_action(root, "skipped")
+        MDCard:
+            radius: [18,]
+            md_bg_color: [1, 1, 1, 0.5]
+            elevation: 0
+            padding: ["10dp", 0]
+            MDBoxLayout:
+                MDLabel:
+                    text: root.note
+                    font_size: "9sp"
+                    bold: True
+                MDIcon:
+                    icon: "chevron-down"
+                    font_size: "16sp"
+                    pos_hint: {"center_y": .5}
 
-    MDCard:
-        radius: [18,]
-        md_bg_color: [1, 1, 1, 0.5]
-        elevation: 0
-        padding: ["10dp", 0]
-        MDBoxLayout:
-            MDLabel:
-                text: root.note
-                font_size: "9sp"
-                bold: True
-            MDIcon:
-                icon: "chevron-down"
-                font_size: "16sp"
-                pos_hint: {"center_y": .5}
 
 <DashboardEkrani>:
     name: "dashboard"
@@ -433,34 +456,34 @@ KV = '''
 
     MDBoxLayout:
         orientation: "vertical"
-    
+
         MDBoxLayout:
             size_hint_y: None
             height: "70dp"
             padding: ["18dp", "8dp", "20dp", "8dp"]
             spacing: "6dp"
-            
-            # --- PROFİL BUTONU DÜZENLENDİ ---
+
             MDIconButton:
                 icon: "account-circle"
-                on_release: root.open_profile() # Artık Düzenleme Ekranına gidecek
-            # --------------------------------
-            
+                on_release: root.open_profile()
+
             Widget:
+
             Image:
                 source: "assets/logo_mor.png"
                 size_hint: None, None
                 size: "45dp", "45dp"
                 allow_stretch: True
                 keep_ratio: True
+
             Widget:
+
             MDIconButton:
                 icon: "cog"
                 on_release: root.open_settings()
 
         MDScrollView:
             bar_width: 0
-            effect_cls: "ScrollEffect"
             MDBoxLayout:
                 orientation: "vertical"
                 adaptive_height: True
@@ -471,7 +494,7 @@ KV = '''
                     text: root.ids.week_cal.month_label
                     bold: True
                     font_style: "H6"
-                
+
                 WeekCalendar:
                     id: week_cal
                     size_hint_x: 1
@@ -479,6 +502,7 @@ KV = '''
                 MDLabel:
                     text: "Bugün nasıl hissediyorsun?"
                     bold: True
+
                 MDGridLayout:
                     cols: 3
                     adaptive_height: True
@@ -511,6 +535,7 @@ KV = '''
                 MDLabel:
                     text: "Bugün hangi semptomları yaşadınız?"
                     bold: True
+
                 MDGridLayout:
                     cols: 3
                     adaptive_height: True
@@ -543,7 +568,7 @@ KV = '''
                 MDLabel:
                     text: "Hatırlatıcı"
                     bold: True
-                
+
                 MDBoxLayout:
                     orientation: "vertical"
                     adaptive_height: True
@@ -554,14 +579,11 @@ KV = '''
                         size_hint_y: None
                         height: "0dp"
                         opacity: 0
-                        padding: ["12dp", "8dp", "12dp", "8dp"]
                         anchor_x: "center"
                         anchor_y: "center"
                         MDLabel:
                             text: "Henüz ilaç eklenmedi"
                             halign: "center"
-                            valign: "middle"
-                            text_size: self.size
                             theme_text_color: "Custom"
                             text_color: [0, 0, 0, 0.5]
 
@@ -572,7 +594,6 @@ KV = '''
                         spacing: "12dp"
 
     MDFloatLayout:
-        # MENÜ KARTI
         MDCard:
             id: menu_card
             size_hint: None, None
@@ -584,7 +605,7 @@ KV = '''
             elevation: 8
             opacity: 0
             disabled: True
-            
+
             canvas.before:
                 Color:
                     rgba: [0.5, 0.3, 0.9, 1]
@@ -604,7 +625,7 @@ KV = '''
                     font_size: "15sp"
                     bold: True
                     on_release: root.menu_action("arti_butonu")
-                
+
                 MDFillRoundFlatButton:
                     text: "Alarm ekle"
                     size_hint_x: 1
@@ -612,7 +633,7 @@ KV = '''
                     font_size: "15sp"
                     bold: True
                     on_release: root.menu_action("alarm_ekle")
-                
+
                 MDFillRoundFlatButton:
                     text: "Tahlil ekle"
                     size_hint_x: 1
@@ -621,16 +642,15 @@ KV = '''
                     bold: True
                     on_release: root.menu_action("tahlil_ekle")
 
-        # ALT NAVİGASYON BARI
         MDCard:
             size_hint: 0.95, None
             height: "70dp"
             pos_hint: {"center_x": .5, "center_y": .06}
             radius: [35,]
-            elevation: 0 
+            elevation: 0
             md_bg_color: [1, 1, 1, 0.98]
             MDBoxLayout:
-                padding: ["25dp", 0, "115dp", 0] 
+                padding: ["25dp", 0, "115dp", 0]
                 spacing: "30dp"
                 MDIconButton:
                     icon: "home"
@@ -647,7 +667,6 @@ KV = '''
                     pos_hint: {"center_y": .5}
                     on_release: root.nav_action("grafik")
 
-        # ARTI BUTONU
         MDIconButton:
             icon: "plus"
             icon_size: "50sp"
@@ -663,16 +682,16 @@ KV = '''
 
 Builder.load_string(KV)
 
+
 class DashboardEkrani(MDScreen):
     menu_open = BooleanProperty(False)
     medicines = ListProperty([])
 
     def on_enter(self, *args):
-        # Ekran her açıldığında çalışır
         self.week_cal = self.ids.week_cal
         self.medicines_list = self.ids.medicines_list
         self.empty_meds = self.ids.empty_meds
-        
+
         self.week_cal.sync_today()
         self.symptom_buttons = [w for w in self.walk() if isinstance(w, SymptomBtn)]
         self.medicine_cards = []
@@ -681,15 +700,12 @@ class DashboardEkrani(MDScreen):
         self.day_medicine_actions = {}
         self.week_cal.bind(selected_idx=self.apply_day_state, days=self.apply_day_state)
 
-        # Menü animasyon hedefi
         self.menu_card = self.ids.menu_card
         self.menu_target_h = dp(190)
-
-        # Başlangıçta kapalı
         self.menu_card.height = 0
         self.menu_card.opacity = 0
         self.menu_card.disabled = True
-        
+
         self._schedule_midnight_refresh()
         self.refresh_medicines()
         self.apply_day_state()
@@ -722,12 +738,10 @@ class DashboardEkrani(MDScreen):
             self.toggle_menu()
         self.manager.current = "ayarlar"
 
-    # --- YENİ EKLENEN PROFİL FONKSİYONU ---
     def open_profile(self):
         if self.menu_open:
             self.toggle_menu()
         self.manager.current = "duzenleme"
-    # --------------------------------------
 
     def _selected_date_key(self):
         return self.week_cal.get_selected_date().isoformat()
@@ -739,12 +753,11 @@ class DashboardEkrani(MDScreen):
             selected_set = self.day_moods.setdefault(date_key, set())
         else:
             selected_set = self.day_symptoms.setdefault(date_key, set())
+
         if btn.selected:
             selected_set.add(btn.text)
         else:
             selected_set.discard(btn.text)
-        
-        print(f"Semptom/Mod: {btn.text} ({'Seçildi' if btn.selected else 'Kaldırıldı'})")
 
     def record_medicine_action(self, card, action: str):
         if not card.medicine_id:
@@ -753,20 +766,20 @@ class DashboardEkrani(MDScreen):
         actions = self.day_medicine_actions.setdefault(date_key, {})
         actions[card.medicine_id] = action
         card.select_action(action)
-        label = "Alındı" if action == "taken" else "Atlandı"
-        print(f"İlaç İşlemi: {card.pill} -> {label}")
 
     def apply_day_state(self, *_):
         date_key = self._selected_date_key()
         moods = self.day_moods.get(date_key, set())
         symptoms = self.day_symptoms.get(date_key, set())
+
         for btn in self.symptom_buttons:
             if btn.group == "mood":
                 btn.selected = btn.text in moods
             elif btn.group == "symptom":
                 btn.selected = btn.text in symptoms
+
         actions = self.day_medicine_actions.get(date_key, {})
-        for card in self.medicine_cards:
+        for card in getattr(self, "medicine_cards", []):
             card.selected_action = actions.get(card.medicine_id, "")
 
     def refresh_medicines(self):
@@ -775,28 +788,11 @@ class DashboardEkrani(MDScreen):
         if not self.medicines:
             self.empty_meds.opacity = 1
             self.empty_meds.height = dp(40)
-            # Şimdilik örnek veri ekleyelim boş kalmasın
-            sample_data = [
-                {"time": "09:00", "pill": "Levotiron", "note": "Aç karnına", "bg": [0.9, 0.9, 1, 1]},
-                {"time": "14:00", "pill": "Vitamin D", "note": "Tok karnına", "bg": [1, 0.95, 0.8, 1]}
-            ]
-            self.empty_meds.opacity = 0
-            self.empty_meds.height = 0
-            for item in sample_data:
-                card = Factory.MedicineCard(
-                    time=item.get("time", ""),
-                    pill=item.get("pill", ""),
-                    note=item.get("note", ""),
-                    bg=item.get("bg", [1, 1, 1, 1]),
-                    btn_color=item.get("btn_color", [0.6, 0.6, 0.6, 1]),
-                    medicine_id=item.get("id", ""),
-                )
-                self.medicines_list.add_widget(card)
-                self.medicine_cards.append(card)
             return
 
         self.empty_meds.opacity = 0
         self.empty_meds.height = 0
+
         for item in self.medicines:
             card = Factory.MedicineCard(
                 time=item.get("time", ""),
@@ -810,14 +806,50 @@ class DashboardEkrani(MDScreen):
                 card.medicine_id = f"{card.pill}|{card.time}|{card.note}"
             self.medicines_list.add_widget(card)
             self.medicine_cards.append(card)
+
         self.apply_day_state()
+
+    def set_medicines(self, medicines):
+        self.medicines = medicines
+        self.refresh_medicines()
 
     def _schedule_midnight_refresh(self):
         now = _dt.datetime.now()
-        tomorrow = (now + _dt.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        tomorrow = (now + _dt.timedelta(days=1)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
         delay = (tomorrow - now).total_seconds()
         Clock.schedule_once(self._midnight_refresh, delay)
 
     def _midnight_refresh(self, *_):
         self.week_cal.sync_today()
+        self.refresh_medicines()
+        self.apply_day_state()
         self._schedule_midnight_refresh()
+
+# --- UYGULAMA PATLAMASIN DİYE: BOŞ EKRANLAR (stub) ---
+class BosEkran(MDScreen):
+    baslik = StringProperty("Boş Ekran")
+
+# İstersen KV ile güzel gösterebilirsin, şimdilik boş kalsın.
+
+
+class TiroidimApp(MDApp):
+    def build(self):
+        sm = ScreenManager()
+        sm.add_widget(DashboardEkrani(name="dashboard"))
+
+        # KV'de geçilen ekran isimleri: takvim, grafik, ayarlar, duzenleme, arti_butonu, alarm_ekle, tahlil_ekle
+        sm.add_widget(BosEkran(name="takvim"))
+        sm.add_widget(BosEkran(name="grafik"))
+        sm.add_widget(BosEkran(name="ayarlar"))
+        sm.add_widget(BosEkran(name="duzenleme"))
+        sm.add_widget(BosEkran(name="arti_butonu"))
+        sm.add_widget(BosEkran(name="alarm_ekle"))
+        sm.add_widget(BosEkran(name="tahlil_ekle"))
+
+        return sm
+
+
+if __name__ == "__main__":
+    TiroidimApp().run()
