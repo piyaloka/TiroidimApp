@@ -76,7 +76,6 @@ KV_AYARLAR = """
 
                         MDSwitch:
                             id: switch_bildirim
-                            active: True
                             on_active: root.bildirim_toggle(value)
 
                 # İLAÇ SAATİ GÜNCELLE
@@ -151,8 +150,29 @@ class AyarlarEkrani(MDScreen):
             self.bildirimler_acik = False
 
     def verileri_yukle(self):
-        db = Database()
-        ilaclar = db.kullanici_ilaclarini_getir()
+    db = Database()
+
+    
+    ilaclar = db.master_ilac_listesi_getir()
+
+    if not ilaclar:
+        toast("İlaç listesi bulunamadı")
+        return
+
+    menu_items = []
+    for ilac_adi in ilaclar:
+        menu_items.append({
+            "viewclass": "OneLineListItem",
+            "text": ilac_adi,
+            "on_release": lambda x=ilac_adi: self.ilac_secildi(x)
+        })
+
+    self.menu = MDDropdownMenu(
+        caller=self.ids.secilen_ilac_kutusu,
+        items=menu_items,
+        width_mult=4
+    )
+
 
         if not ilaclar:
             toast("Kayıtlı ilaç bulunamadı")
@@ -177,13 +197,14 @@ class AyarlarEkrani(MDScreen):
         if self.menu:
             self.menu.open()
 
-    def ilac_secildi(self, ilac):
-        self.secili_ilac_id = ilac[0]
-        self.ids.secilen_ilac_kutusu.text = f"{ilac[1]} - {ilac[2]}"
-        self.ids.yeni_saat_input.text = ilac[3]
-        self.ids.yeni_saat_input.disabled = False
-        self.ids.btn_saat_guncelle.disabled = False
-        self.menu.dismiss()
+    def ilac_secildi(self, ilac_adi):
+    self.secili_ilac_adi = ilac_adi
+    self.ids.secilen_ilac_kutusu.text = ilac_adi
+    self.ids.yeni_saat_input.text = ""
+    self.ids.yeni_saat_input.disabled = False
+    self.ids.btn_saat_guncelle.disabled = False
+    self.menu.dismiss()
+
 
     def saat_guncelle(self):
         if not self.secili_ilac_id:
@@ -201,6 +222,11 @@ class AyarlarEkrani(MDScreen):
             "UPDATE kullanici_ilaclari SET saat = ? WHERE id = ?",
             (yeni_saat, self.secili_ilac_id)
         )
+        
+    def on_enter(self):
+        self.ids.switch_bildirim.active = True
+        self.verileri_yukle()
+
         conn.commit()
         conn.close()
 
