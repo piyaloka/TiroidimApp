@@ -22,87 +22,108 @@ kv_grafik = """
     
     MDFloatLayout:
         
-        # --- ÜST BAŞLIK ALANI ---
+        # --- ANA İÇERİK YAPISI (Dikey) ---
         MDBoxLayout:
-            id: header_box
-            orientation: 'horizontal'
-            adaptive_height: True
-            pos_hint: {"top": 1}
-            padding: ["20dp", "15dp", "20dp", "10dp"]
-            spacing: "10dp"
-            md_bg_color: 1, 1, 1, 1
+            orientation: 'vertical'
             
-            MDIconButton:
-                icon: "arrow-left"
-                theme_text_color: "Custom"
-                text_color: 0.2, 0.2, 0.2, 1
-                on_release: root.manager.current = "dashboard"
-                pos_hint: {"center_y": .5}
+            # --- 1. ÜST BAR (Dashboard ile Aynı) ---
+            MDBoxLayout:
+                size_hint_y: None
+                height: "70dp"
+                padding: ["18dp", "8dp", "20dp", "8dp"]
+                spacing: "6dp"
+                md_bg_color: 1, 1, 1, 1
+                
+                # SOL ÜST: Profil Butonu
+                MDIconButton:
+                    icon: "account-circle"
+                    theme_text_color: "Custom"
+                    text_color: 0.2, 0.2, 0.2, 1
+                    on_release: root.open_profile() # Düzenleme sayfasına gider
+                
+                Widget: # Boşluk
+                
+                # ORTA: Logo
+                Image:
+                    source: "assets/logo_mor.png"
+                    size_hint: None, None
+                    size: "45dp", "45dp"
+                    allow_stretch: True
+                    keep_ratio: True
+                
+                Widget: # Boşluk
 
+                # SAĞ ÜST: Ayarlar Butonu
+                MDIconButton:
+                    icon: "cog"
+                    theme_text_color: "Custom"
+                    text_color: 0.2, 0.2, 0.2, 1
+                    on_release: root.open_settings() # Ayarlar sayfasına gider
+
+            # --- 2. GRAFİK BAŞLIĞI ---
             MDLabel:
                 text: "Analiz ve Grafikler"
                 font_style: "H5"
                 bold: True
                 theme_text_color: "Custom"
                 text_color: 0.2, 0.1, 0.35, 1
-                pos_hint: {"center_y": .5}
+                halign: "center"
+                size_hint_y: None
+                height: "40dp"
 
-        # --- SCROLL EDİLEBİLİR İÇERİK ---
-        MDScrollView:
-            size_hint_y: None
-            height: root.height - header_box.height - dp(80) 
-            pos_hint: {"top": .88}
-            bar_width: 0
-            
-            MDBoxLayout:
-                orientation: 'vertical'
-                adaptive_height: True
-                padding: ["20dp", "10dp", "20dp", "120dp"] 
-                spacing: "20dp"
-
-                # 1. GRAFİK KARTI
-                MDCard:
-                    size_hint_y: None
-                    height: "320dp"
-                    radius: [25,]
-                    elevation: 0
-                    padding: "10dp"
-                    orientation: 'vertical'
-                    md_bg_color: [0.96, 0.96, 0.98, 1]
-                    
-                    MDLabel:
-                        text: "TSH - T3 - T4 Değişimi"
-                        font_style: "Caption"
-                        bold: True
-                        size_hint_y: None
-                        height: "20dp"
-                        theme_text_color: "Secondary"
-                        halign: "center"
-
-                    # Grafik Resmi Buraya Gelecek
-                    MDBoxLayout:
-                        id: chart_box
-                        orientation: 'vertical'
-                        size_hint: 1, 1
-
-                # 2. LİSTE BAŞLIĞI
-                MDLabel:
-                    text: "Laboratuvar Geçmişi"
-                    font_style: "H6"
-                    bold: True
-                    adaptive_height: True
-                    theme_text_color: "Custom"
-                    text_color: 0.2, 0.1, 0.35, 1
-                    padding: [0, "10dp", 0, 0]
-
-                # 3. SONUÇLAR LİSTESİ
+            # --- 3. SCROLL EDİLEBİLİR İÇERİK ---
+            MDScrollView:
+                bar_width: 0
                 MDBoxLayout:
-                    id: results_list
                     orientation: 'vertical'
                     adaptive_height: True
-                    spacing: "15dp"
+                    # Alt tarafa (130dp) boşluk bırakıyoruz ki menü butonları içeriği kapatmasın
+                    padding: ["20dp", "10dp", "20dp", "130dp"] 
+                    spacing: "20dp"
 
-        # --- ALT NAVİGASYON ---
+                    # GRAFİK KARTI
+                    MDCard:
+                        size_hint_y: None
+                        height: "320dp"
+                        radius: [25,]
+                        elevation: 0
+                        padding: "10dp"
+                        orientation: 'vertical'
+                        md_bg_color: [0.96, 0.96, 0.98, 1]
+                        
+                        MDLabel:
+                            text: "TSH - T3 - T4 Değişimi"
+                            font_style: "Caption"
+                            bold: True
+                            size_hint_y: None
+                            height: "20dp"
+                            theme_text_color: "Secondary"
+                            halign: "center"
+
+                        # Grafik Resmi Buraya Gelecek
+                        MDBoxLayout:
+                            id: chart_box
+                            orientation: 'vertical'
+                            size_hint: 1, 1
+
+                    # LİSTE BAŞLIĞI
+                    MDLabel:
+                        text: "Laboratuvar Geçmişi"
+                        font_style: "H6"
+                        bold: True
+                        adaptive_height: True
+                        theme_text_color: "Custom"
+                        text_color: 0.2, 0.1, 0.35, 1
+                        padding: [0, "10dp", 0, 0]
+
+                    # SONUÇLAR LİSTESİ
+                    MDBoxLayout:
+                        id: results_list
+                        orientation: 'vertical'
+                        adaptive_height: True
+                        spacing: "15dp"
+
+        # --- ALT NAVİGASYON (YÜZEN KART) ---
         MDCard:
             size_hint: 0.95, None
             height: "70dp"
@@ -113,10 +134,10 @@ kv_grafik = """
             
             MDBoxLayout:
                 # AYAR: Sağ taraftaki boşluğu 135dp yaptık (Simgeler sola kaydı)
-                padding: ["20dp", 0, "135dp", 0] 
+                padding: ["25dp", 0, "135dp", 0] 
                 spacing: "30dp"
                 
-                # --- ANASAYFA (PASİF) ---
+                # --- ANASAYFA (PASİF - SİYAH) ---
                 MDIconButton:
                     icon: "home-outline"
                     theme_icon_color: "Custom"
@@ -125,7 +146,7 @@ kv_grafik = """
                     on_release: root.manager.current = "dashboard"
                     size_hint_x: 0.5
                 
-                # --- TAKVİM (PASİF) ---
+                # --- TAKVİM (PASİF - SİYAH) ---
                 MDIconButton:
                     icon: "calendar-month-outline"
                     theme_icon_color: "Custom"
@@ -141,22 +162,22 @@ kv_grafik = """
                     icon_color: [0.4, 0.1, 0.8, 1] 
                     md_bg_color: [0.9, 0.85, 1, 0.5] 
                     pos_hint: {"center_y": .5}
-                    on_release: root.manager.current = "grafik"
                     size_hint_x: 0.5
+                    # Zaten buradayız, tekrar tıklarsa sayfa yenilenebilir
+                    on_release: root.on_enter()
 
-        # --- ARTI BUTONU (BÜYÜTÜLDÜ) ---
+        # --- ARTI BUTONU (BÜYÜK & SAĞ ALTA) ---
         MDIconButton:
             icon: "plus"
-            # AYAR: Simge boyutu büyütüldü (60sp)
             icon_size: "60sp"
             size_hint: None, None
-            # AYAR: Dokunma alanı büyütüldü (110dp)
             size: "110dp", "110dp"
             pos_hint: {"center_x": .82, "center_y": .09}
             md_bg_color: [0.5, 0.3, 0.9, 1]
             theme_icon_color: "Custom"
             icon_color: [1, 1, 1, 1]
             elevation: 10
+            # Direkt olarak İlaç/Tahlil ekleme ekranına yönlendirir
             on_release: root.manager.current = "arti_butonu"
 """
 
@@ -170,6 +191,14 @@ class GrafikEkrani(MDScreen):
     def on_enter(self):
         """Ekran her açıldığında verileri tazeleyip grafiği yeniden çizer"""
         self.update_content()
+
+    def open_profile(self):
+        """Profil (Düzenleme) ekranına git"""
+        self.manager.current = "duzenleme"
+
+    def open_settings(self):
+        """Ayarlar ekranına git"""
+        self.manager.current = "ayarlar"
 
     def update_content(self):
         # 1. Temizlik
@@ -204,7 +233,7 @@ class GrafikEkrani(MDScreen):
         # 4. Grafik Çizme
         self.create_chart_image(dates, tsh_vals, t3_vals, t4_vals)
 
-        # 5. Liste Doldurma
+        # 5. Liste Doldurma (En yeniden eskiye)
         for veri in reversed(sonuclar):
             self.create_result_card(veri)
 
