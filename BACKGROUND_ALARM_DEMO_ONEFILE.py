@@ -46,7 +46,7 @@ class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val title = intent.getStringExtra("title") ?: "Tiroidim"
         val message = intent.getStringExtra("message")
-            ?: "İlaç saatin geldi. Lütfen ilacını almayı unutma 💊"
+            ?: "İlaç saatin geldi. Lütfen ilacını almayı unutma "
 
         val channelId = "tiroidim_alarm_channel"
         val notificationId = 1001
@@ -100,7 +100,7 @@ object AlarmScheduler {
         context: Context,
         triggerAtMillis: Long,
         title: String = "Tiroidim",
-        message: String = "İlaç saatin geldi. Lütfen ilacını almayı unutma 💊"
+        message: String = "İlaç saatin geldi. Lütfen ilacını almayı unutma "
     ) {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("title", title)
@@ -183,7 +183,7 @@ AlarmScheduler.scheduleExact(
     ctx,
     trigger_ms,
     "Tiroidim",
-    "İlaç saatin geldi. Lütfen ilacını almayı unutma 💊"
+    "İlaç saatin geldi. Lütfen ilacını almayı unutma "
 )
 """.strip()
 
