@@ -12,6 +12,7 @@ from kivy.factory import Factory
 from kivy.uix.screenmanager import ScreenManager
 
 import datetime as _dt
+from database import Database
 
 Config.set('graphics', 'maxfps', '60')
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
@@ -688,6 +689,7 @@ class DashboardEkrani(MDScreen):
     medicines = ListProperty([])
 
     def on_enter(self, *args):
+        self.db = Database()
         self.week_cal = self.ids.week_cal
         self.medicines_list = self.ids.medicines_list
         self.empty_meds = self.ids.empty_meds
@@ -698,7 +700,7 @@ class DashboardEkrani(MDScreen):
         self.day_moods = {}
         self.day_symptoms = {}
         self.day_medicine_actions = {}
-        self.week_cal.bind(selected_idx=self.apply_day_state, days=self.apply_day_state)
+        self.week_cal.bind(selected_idx=self.on_day_change, days=self.on_day_change)
 
         self.menu_card = self.ids.menu_card
         self.menu_target_h = dp(190)
@@ -707,7 +709,7 @@ class DashboardEkrani(MDScreen):
         self.menu_card.disabled = True
 
         self._schedule_midnight_refresh()
-        self.refresh_medicines()
+        self._load_medicines_for_selected_date()
         self.apply_day_state()
 
     def toggle_menu(self):
@@ -766,6 +768,9 @@ class DashboardEkrani(MDScreen):
         actions = self.day_medicine_actions.setdefault(date_key, {})
         actions[card.medicine_id] = action
         card.select_action(action)
+        if getattr(self, "db", None) and card.medicine_id.isdigit():
+            durum = "ALINDI" if action == "taken" else "ATLADI"
+            self.db.ilac_logla(int(card.medicine_id), date_key, durum)
 
     def apply_day_state(self, *_):
         date_key = self._selected_date_key()
@@ -808,6 +813,39 @@ class DashboardEkrani(MDScreen):
             self.medicine_cards.append(card)
 
         self.apply_day_state()
+
+    def on_day_change(self, *_):
+        self._load_medicines_for_selected_date()
+        self.apply_day_state()
+
+    def _load_medicines_for_selected_date(self):
+        if not getattr(self, "db", None):
+            return
+        selected_date = self.week_cal.get_selected_date()
+        date_key = selected_date.isoformat()
+        cards = self.db.dashboard_kartlarini_getir(date_key)
+        medicines = []
+        actions = {}
+        for k in cards:
+            taken = k.get("taken")
+            if taken is True:
+                bg = [0.88, 0.94, 0.75, 1]
+                actions[str(k["ilac_id"])] = "taken"
+            elif taken is False:
+                bg = [1, 0.9, 0.9, 1]
+                actions[str(k["ilac_id"])] = "skipped"
+            else:
+                bg = [0.97, 0.97, 0.99, 1]
+            medicines.append({
+                "time": k.get("saat", ""),
+                "pill": k.get("ilac_adi", ""),
+                "note": k.get("doz", ""),
+                "bg": bg,
+                "btn_color": [0.9, 0.5, 0.5, 1],
+                "id": str(k.get("ilac_id", "")),
+            })
+        self.day_medicine_actions[date_key] = actions
+        self.set_medicines(medicines)
 
     def set_medicines(self, medicines):
         self.medicines = medicines
