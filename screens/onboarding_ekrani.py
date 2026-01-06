@@ -1,5 +1,4 @@
 from kivymd.uix.screen import MDScreen
-# DatePicker importu kaldırıldı
 from kivy.lang import Builder
 from kivy.properties import StringProperty
 from database import Database
