@@ -43,7 +43,7 @@ kv_str = """
     MDFloatLayout:
         md_bg_color: 1, 1, 1, 1
         MDCard:
-            size_hint: .88, .8
+            size_hint: .88, .92
             pos_hint: {"center_x": .5, "center_y": .5}
             radius: [60, 60, 10, 80]
             padding: dp(25)
