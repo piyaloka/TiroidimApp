@@ -135,10 +135,11 @@ Builder.load_string(KV_AYARLAR)
 
 class AyarlarEkrani(MDScreen):
     menu = None
-    secili_ilac_id = None
+    secili_ilac_adi = None
     bildirimler_acik = True
 
     def on_enter(self):
+        self.ids.switch_bildirim.active = True
         self.verileri_yukle()
 
     def bildirim_toggle(self, value):
@@ -149,41 +150,21 @@ class AyarlarEkrani(MDScreen):
             toast("İlaç hatırlatıcıları KAPALI")
             self.bildirimler_acik = False
 
+    # 🔹 MASTER İLAÇLARDAN ÇEK
     def verileri_yukle(self):
-    db = Database()
-
-    
-    ilaclar = db.master_ilac_listesi_getir()
-
-    if not ilaclar:
-        toast("İlaç listesi bulunamadı")
-        return
-
-    menu_items = []
-    for ilac_adi in ilaclar:
-        menu_items.append({
-            "viewclass": "OneLineListItem",
-            "text": ilac_adi,
-            "on_release": lambda x=ilac_adi: self.ilac_secildi(x)
-        })
-
-    self.menu = MDDropdownMenu(
-        caller=self.ids.secilen_ilac_kutusu,
-        items=menu_items,
-        width_mult=4
-    )
-
+        db = Database()
+        ilaclar = db.master_ilac_listesi_getir()
 
         if not ilaclar:
-            toast("Kayıtlı ilaç bulunamadı")
+            toast("İlaç listesi bulunamadı")
             return
 
         menu_items = []
-        for ilac in ilaclar:
+        for ilac_adi in ilaclar:
             menu_items.append({
                 "viewclass": "OneLineListItem",
-                "text": f"{ilac[1]} ({ilac[2]}) - {ilac[3]}",
-                "on_release": lambda x=ilac: self.ilac_secildi(x)
+                "text": ilac_adi,
+                "on_release": lambda x=ilac_adi: self.ilac_secildi(x)
             })
 
         self.menu = MDDropdownMenu(
@@ -198,16 +179,15 @@ class AyarlarEkrani(MDScreen):
             self.menu.open()
 
     def ilac_secildi(self, ilac_adi):
-    self.secili_ilac_adi = ilac_adi
-    self.ids.secilen_ilac_kutusu.text = ilac_adi
-    self.ids.yeni_saat_input.text = ""
-    self.ids.yeni_saat_input.disabled = False
-    self.ids.btn_saat_guncelle.disabled = False
-    self.menu.dismiss()
+        self.secili_ilac_adi = ilac_adi
+        self.ids.secilen_ilac_kutusu.text = ilac_adi
+        self.ids.yeni_saat_input.disabled = False
+        self.ids.btn_saat_guncelle.disabled = False
+        self.menu.dismiss()
 
-
+    # 🔹 DEMO – DB YOK
     def saat_guncelle(self):
-        if not self.secili_ilac_id:
+        if not self.secili_ilac_adi:
             toast("Lütfen önce bir ilaç seçin")
             return
 
@@ -216,25 +196,10 @@ class AyarlarEkrani(MDScreen):
             toast("Saat boş olamaz")
             return
 
-        db = Database()
-        conn = db.baglanti_ac()
-        conn.execute(
-            "UPDATE kullanici_ilaclari SET saat = ? WHERE id = ?",
-            (yeni_saat, self.secili_ilac_id)
-        )
-        
-    def on_enter(self):
-        self.ids.switch_bildirim.active = True
-        self.verileri_yukle()
-
-        conn.commit()
-        conn.close()
-
-        toast("Saat güncellendi")
+        toast(f"{self.secili_ilac_adi} için saat güncellendi (Demo)")
 
         self.ids.secilen_ilac_kutusu.text = ""
         self.ids.yeni_saat_input.text = ""
         self.ids.yeni_saat_input.disabled = True
         self.ids.btn_saat_guncelle.disabled = True
-        self.secili_ilac_id = None
-        self.verileri_yukle()
+        self.secili_ilac_adi = None
