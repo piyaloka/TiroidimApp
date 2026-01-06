@@ -81,7 +81,7 @@ class AlarmScreen(Screen):
         Android / Desktop üst bildirim gönderir.
         """
         title = "Tiroidim"
-        message = "İlaç saatin geldi. Lütfen ilacını almayı unutma 💊"
+        message = "İlaç saatin geldi. Lütfen ilacını almayı unutma "
 
         # plyer yoksa crash etmeden mock bas
         if notification is None:
