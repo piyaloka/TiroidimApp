@@ -1,4 +1,3 @@
-# --- EN TEPEYE BU KODLARI EKLE (Kivy importlarından ÖNCE) ---
 import os
 from kivy.config import Config
 
