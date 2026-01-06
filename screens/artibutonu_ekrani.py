@@ -76,6 +76,18 @@ kv_str = """
                 label: "İlacınızı ne zaman aldınız?"
                 text_val: "GG/AA/YYYY"
                 on_touch_down: if self.collide_point(*args[1].pos): root.start_date_selection()
+
+            CustomInput:
+                id: i_vakit_durum
+                label: "Gün içerisinde?"
+                text_val: "Seçiniz"
+                on_touch_down: if self.collide_point(*args[1].pos): root.open_time_picker()
+
+            CustomInput:
+                id: i_time_full
+                label: "Saat"
+                text_val: "00:00"
+                on_touch_down: if self.collide_point(*args[1].pos): root.open_period_menu()
             
             MDBoxLayout:
                 adaptive_height: True
@@ -271,6 +283,52 @@ class BaseMenuScreen(MDScreen):
         caller.text = text
         if self.menu: self.menu.dismiss()
 
+    def _get_text_field(self, field_id):
+        widget = self.ids.get(field_id)
+        if widget and hasattr(widget, "ids"):
+            return widget.ids.text_field
+        return None
+
+    def open_time_picker(self, field_id=None):
+        options = ["Sabah / Aç", "Sabah / Tok", "Öğle / Aç", "Öğle / Tok", "Akşam / Aç", "Akşam / Tok"]
+        target = None
+        if field_id:
+            target = self._get_text_field(field_id)
+        else:
+            target = self._get_text_field("a_vakit_durum") or self._get_text_field("i_vakit_durum")
+        if not target:
+            return
+        callback = self.set_multi_val if self.ids.get("a_vakit_durum") else self.set_val
+        self.open_dropdown(target, options, callback)
+
+    def open_period_menu(self, field_id=None):
+        self._time_target_id = field_id
+        time_dialog = MDTimePicker()
+        time_dialog.bind(on_save=self.on_time_save)
+        time_dialog.open()
+
+    def on_time_save(self, instance, time):
+        saat_str = time.strftime("%H:%M")
+        target = None
+        if getattr(self, "_time_target_id", None):
+            target = self._get_text_field(self._time_target_id)
+        else:
+            target = self._get_text_field("a_time_full") or self._get_text_field("i_time_full")
+        if target:
+            target.text = saat_str
+
+    def set_multi_val(self, text, caller):
+        current_text = caller.text
+        if not current_text or current_text == "Seçiniz":
+            caller.text = text
+        else:
+            selections = [s.strip() for s in current_text.split(",")]
+            if text not in selections:
+                if len(selections) < 2:
+                    caller.text = f"{current_text}, {text}"
+        if self.menu:
+            self.menu.dismiss()
+
     # Ortak Tarih Seçimi
     def start_date_selection(self):
         # Eğer bu sınıfın bir t_date veya i_date id'si varsa onu kullanır
@@ -306,8 +364,11 @@ class ArtiButonuEkrani(BaseMenuScreen):
     def kaydet(self):
         ad = self.ids.i_name.ids.text_field.text.split(' - ')[0]
         doz = self.ids.i_doz.ids.text_field.text
+        vakit = self.ids.i_vakit_durum.ids.text_field.text
+        saat = self.ids.i_time_full.ids.text_field.text
+        periyot = vakit if vakit not in ["Seçiniz", ""] else "Her Gün"
         if ad != "Seçiniz" and doz != "Seçiniz":
-            self.db.kullanici_ilaci_ekle(ad, doz, "09:00", "Her Gün")
+            self.db.kullanici_ilaci_ekle(ad, doz, saat, periyot)
             print(f"İlaç Kaydedildi: {ad}")
             self.manager.current = "dashboard"
 
@@ -323,40 +384,30 @@ class AlarmEkrani(BaseMenuScreen):
         
         self.open_dropdown(self.ids.a_name.ids.text_field, liste, self.set_val)
 
-    def open_time_picker(self):
-        options = ["Sabah / Aç", "Sabah / Tok", "Öğle / Aç", "Öğle / Tok", "Akşam / Aç", "Akşam / Tok"]
-        self.open_dropdown(self.ids.a_vakit_durum.ids.text_field, options, self.set_multi_val)
-    
-    def open_period_menu(self):
-        time_dialog = MDTimePicker()
-        time_dialog.bind(on_save=self.on_time_save)
-        time_dialog.open()
-    
-    def on_time_save(self, instance, time):
-        # Saati string formatına çevir (09:05 gibi)
-        saat_str = time.strftime("%H:%M")
-        self.ids.a_time_full.ids.text_field.text = saat_str
-
-    def set_multi_val(self, text, caller):
-        current_text = caller.text
-        if not current_text or current_text == "Seçiniz": caller.text = text
-        else:
-            selections = [s.strip() for s in current_text.split(",")]
-            if text not in selections:
-                if len(selections) < 2: caller.text = f"{current_text}, {text}"
-        self.menu.dismiss()
-
     def kaydet(self):
-        ilac = self.ids.a_name.ids.text_field.text
+        ilac_text = self.ids.a_name.ids.text_field.text
         adet = self.ids.a_adet.ids.text_field.text
         gun = self.ids.a_gun.ids.text_field.text
         vakit = self.ids.a_vakit_durum.ids.text_field.text
         saat = self.ids.a_time_full.ids.text_field.text
         
-        if ilac in ["Seçiniz", "Önce İlaç Ekleyin"]:
+        if ilac_text in ["Seçiniz", "Önce İlaç Ekleyin"]:
             print("Hata: İlaç seçilmedi")
             return
             
+        ilac = ilac_text
+        doz = ""
+        if " (" in ilac_text and ilac_text.endswith(")"):
+            ilac, doz = ilac_text[:-1].split(" (", 1)
+
+        periyot_parts = []
+        if vakit not in ["Seçiniz", ""]:
+            periyot_parts.append(vakit)
+        if adet and gun and adet != "0" and gun != "0":
+            periyot_parts.append(f"{adet} adet / {gun} gün")
+        periyot = " - ".join(periyot_parts) if periyot_parts else "Her Gün"
+
+        self.db.kullanici_ilaci_ekle(ilac, doz, saat, periyot)
         print(f"Kaydediliyor: {ilac}, {adet} Adet, {gun} Gün, Vakit: {vakit}, Saat: {saat}")
         self.manager.current = "dashboard" 
 

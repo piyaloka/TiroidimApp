@@ -12,11 +12,12 @@ from kivy.factory import Factory
 from kivy.uix.screenmanager import ScreenManager
 
 import datetime as _dt
+from database import Database
 
 Config.set('graphics', 'maxfps', '60')
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 
-Window.size = (360, 740)
+Window.size = (400, 750)
 
 
 # --- YARDIMCI SINIFLAR ---
@@ -107,24 +108,24 @@ class MedicineCard(MDCard):
 KV = r'''
 <WeekCalendar>:
     size_hint_y: None
-    height: "112dp"
+    height: "118dp"
     radius: [28,]
     elevation: 0
     md_bg_color: [1, 1, 1, 1]
-    padding: ["7dp", "12dp", "7dp", "10dp"]
+    padding: ["8dp", "12dp", "0dp", "10dp"]
 
     MDBoxLayout:
         orientation: "vertical"
-        spacing: "10dp"
+        spacing: "9dp"
         MDGridLayout:
             cols: 7
             adaptive_height: True
-            spacing: "8dp"
+            spacing: "7dp"
 
             # 0..6 (sende zaten yazılıydı; aynen bıraktım)
             MDCard:
                 size_hint: None, None
-                size: "38dp", "70dp"
+                size: "42dp", "78dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 0 else [1, 1, 1, 1])
@@ -133,26 +134,26 @@ KV = r'''
                 on_release: root.select_day(0)
                 MDBoxLayout:
                     orientation: "vertical"
-                    padding: [0, "8dp", 0, "8dp"]
-                    spacing: "6dp"
+                    padding: [0, "9dp", 0, "9dp"]
+                    spacing: "5dp"
                     MDLabel:
                         text: root.days[0]["dow"] if root.days else ""
                         halign: "center"
-                        font_size: "10sp"
+                        font_size: "11sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 0 else [0, 0, 0, 0.55])
                     MDLabel:
                         text: root.days[0]["day"] if root.days else ""
                         halign: "center"
-                        font_size: "12sp"
+                        font_size: "13sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 0 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[0]["is_weekend"]) else [0, 0, 0, 0.75]))
 
             MDCard:
                 size_hint: None, None
-                size: "38dp", "70dp"
+                size: "42dp", "78dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 1 else [1, 1, 1, 1])
@@ -161,26 +162,26 @@ KV = r'''
                 on_release: root.select_day(1)
                 MDBoxLayout:
                     orientation: "vertical"
-                    padding: [0, "8dp", 0, "8dp"]
-                    spacing: "6dp"
+                    padding: [0, "9dp", 0, "9dp"]
+                    spacing: "5dp"
                     MDLabel:
                         text: root.days[1]["dow"] if root.days else ""
                         halign: "center"
-                        font_size: "10sp"
+                        font_size: "11sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 1 else [0, 0, 0, 0.55])
                     MDLabel:
                         text: root.days[1]["day"] if root.days else ""
                         halign: "center"
-                        font_size: "12sp"
+                        font_size: "13sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 1 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[1]["is_weekend"]) else [0, 0, 0, 0.75]))
 
             MDCard:
                 size_hint: None, None
-                size: "38dp", "70dp"
+                size: "42dp", "78dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 2 else [1, 1, 1, 1])
@@ -189,26 +190,26 @@ KV = r'''
                 on_release: root.select_day(2)
                 MDBoxLayout:
                     orientation: "vertical"
-                    padding: [0, "8dp", 0, "8dp"]
-                    spacing: "6dp"
+                    padding: [0, "9dp", 0, "9dp"]
+                    spacing: "5dp"
                     MDLabel:
                         text: root.days[2]["dow"] if root.days else ""
                         halign: "center"
-                        font_size: "10sp"
+                        font_size: "11sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 2 else [0, 0, 0, 0.55])
                     MDLabel:
                         text: root.days[2]["day"] if root.days else ""
                         halign: "center"
-                        font_size: "12sp"
+                        font_size: "13sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 2 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[2]["is_weekend"]) else [0, 0, 0, 0.75]))
 
             MDCard:
                 size_hint: None, None
-                size: "38dp", "70dp"
+                size: "42dp", "78dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 3 else [1, 1, 1, 1])
@@ -217,26 +218,26 @@ KV = r'''
                 on_release: root.select_day(3)
                 MDBoxLayout:
                     orientation: "vertical"
-                    padding: [0, "8dp", 0, "8dp"]
-                    spacing: "6dp"
+                    padding: [0, "9dp", 0, "9dp"]
+                    spacing: "5dp"
                     MDLabel:
                         text: root.days[3]["dow"] if root.days else ""
                         halign: "center"
-                        font_size: "10sp"
+                        font_size: "11sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 3 else [0, 0, 0, 0.55])
                     MDLabel:
                         text: root.days[3]["day"] if root.days else ""
                         halign: "center"
-                        font_size: "12sp"
+                        font_size: "13sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 3 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[3]["is_weekend"]) else [0, 0, 0, 0.75]))
 
             MDCard:
                 size_hint: None, None
-                size: "38dp", "70dp"
+                size: "42dp", "78dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 4 else [1, 1, 1, 1])
@@ -245,26 +246,26 @@ KV = r'''
                 on_release: root.select_day(4)
                 MDBoxLayout:
                     orientation: "vertical"
-                    padding: [0, "8dp", 0, "8dp"]
-                    spacing: "6dp"
+                    padding: [0, "9dp", 0, "9dp"]
+                    spacing: "5dp"
                     MDLabel:
                         text: root.days[4]["dow"] if root.days else ""
                         halign: "center"
-                        font_size: "10sp"
+                        font_size: "11sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 4 else [0, 0, 0, 0.55])
                     MDLabel:
                         text: root.days[4]["day"] if root.days else ""
                         halign: "center"
-                        font_size: "12sp"
+                        font_size: "13sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 4 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[4]["is_weekend"]) else [0, 0, 0, 0.75]))
 
             MDCard:
                 size_hint: None, None
-                size: "38dp", "70dp"
+                size: "42dp", "78dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 5 else [1, 1, 1, 1])
@@ -273,26 +274,26 @@ KV = r'''
                 on_release: root.select_day(5)
                 MDBoxLayout:
                     orientation: "vertical"
-                    padding: [0, "8dp", 0, "8dp"]
-                    spacing: "6dp"
+                    padding: [0, "9dp", 0, "9dp"]
+                    spacing: "5dp"
                     MDLabel:
                         text: root.days[5]["dow"] if root.days else ""
                         halign: "center"
-                        font_size: "10sp"
+                        font_size: "11sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 5 else [0, 0, 0, 0.55])
                     MDLabel:
                         text: root.days[5]["day"] if root.days else ""
                         halign: "center"
-                        font_size: "12sp"
+                        font_size: "13sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 5 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[5]["is_weekend"]) else [0, 0, 0, 0.75]))
 
             MDCard:
                 size_hint: None, None
-                size: "38dp", "70dp"
+                size: "42dp", "78dp"
                 radius: [20,]
                 elevation: 0
                 md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected_idx == 6 else [1, 1, 1, 1])
@@ -301,19 +302,19 @@ KV = r'''
                 on_release: root.select_day(6)
                 MDBoxLayout:
                     orientation: "vertical"
-                    padding: [0, "8dp", 0, "8dp"]
-                    spacing: "6dp"
+                    padding: [0, "9dp", 0, "9dp"]
+                    spacing: "5dp"
                     MDLabel:
                         text: root.days[6]["dow"] if root.days else ""
                         halign: "center"
-                        font_size: "10sp"
+                        font_size: "11sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 6 else [0, 0, 0, 0.55])
                     MDLabel:
                         text: root.days[6]["day"] if root.days else ""
                         halign: "center"
-                        font_size: "12sp"
+                        font_size: "13sp"
                         bold: True
                         theme_text_color: "Custom"
                         text_color: ([0.2, 0.1, 0.35, 1] if root.selected_idx == 6 else ([0.85, 0.2, 0.2, 1] if (root.days and root.days[6]["is_weekend"]) else [0, 0, 0, 0.75]))
@@ -326,7 +327,7 @@ KV = r'''
             anchor_y: "center"
             MDCard:
                 size_hint: None, None
-                size: "72dp", "2dp"
+                size: "78dp", "2dp"
                 radius: [1,]
                 elevation: 0
                 md_bg_color: [0.5, 0.3, 0.9, 0.25]
@@ -334,7 +335,7 @@ KV = r'''
 
 <SymptomBtn>:
     size_hint: None, None
-    size: "105dp", "40dp"
+    size: "118dp", "46dp"
     radius: [20,]
     elevation: 0
     md_bg_color: ([0.78, 0.72, 0.95, 1] if root.selected else [0.96, 0.96, 0.98, 1])
@@ -344,17 +345,17 @@ KV = r'''
         app.root.get_screen('dashboard').toggle_symptom(root)
 
     MDBoxLayout:
-        padding: ["10dp", 0]
-        spacing: "5dp"
+        padding: ["12dp", 0]
+        spacing: "6dp"
         MDIcon:
             icon: root.icon
-            font_size: "18sp"
+            font_size: "21sp"
             theme_text_color: "Custom"
             text_color: ([0.25, 0.12, 0.5, 1] if root.selected else [0.5, 0.3, 0.9, 1])
             pos_hint: {"center_y": .5}
         MDLabel:
             text: root.text
-            font_size: "10sp"
+            font_size: "11sp"
             bold: True
             theme_text_color: "Custom"
             text_color: ([0.25, 0.12, 0.5, 1] if root.selected else [0, 0, 0, 0.8])
@@ -362,7 +363,7 @@ KV = r'''
 
 <ActionBtn>:
     size_hint: None, None
-    size: "65dp", "38dp"
+    size: "72dp", "40dp"
     radius: [18,]
     elevation: 0
     md_bg_color: (root.selected_bg if root.selected else root.bg)
@@ -371,7 +372,7 @@ KV = r'''
     MDLabel:
         text: root.text
         halign: "center"
-        font_size: "10sp"
+        font_size: "11sp"
         bold: True
         theme_text_color: "Custom"
         text_color: (root.selected_text_color if root.selected else root.text_color)
@@ -380,10 +381,10 @@ KV = r'''
 <MedicineCard>:
     orientation: "vertical"
     size_hint_y: None
-    height: "140dp"
+    height: "144dp"
     size_hint_x: 1
     pos_hint: {"center_x": .5}
-    padding: ["16dp", "10dp"]
+    padding: ["16dp", "9dp"]
     radius: [25,]
     elevation: 0
     md_bg_color: root.bg
@@ -391,19 +392,19 @@ KV = r'''
     MDBoxLayout:
         orientation: "vertical"
         size_hint_y: None
-        height: "55dp"
-        spacing: "2dp"
+        height: "56dp"
+        spacing: "1dp"
         MDLabel:
             text: root.time
             bold: True
-            font_size: "18sp"
+            font_size: "19sp"
             size_hint_y: None
             height: "26dp"
             theme_text_color: "Custom"
             text_color: [0, 0, 0, 0.9]
         MDLabel:
             text: root.pill
-            font_size: "15sp"
+            font_size: "16sp"
             bold: True
             size_hint_y: None
             height: "22dp"
@@ -413,7 +414,7 @@ KV = r'''
     Widget:
 
     MDBoxLayout:
-        spacing: "8dp"
+        spacing: "7dp"
         size_hint_y: None
         height: "38dp"
         ActionBtn:
@@ -459,12 +460,13 @@ KV = r'''
 
         MDBoxLayout:
             size_hint_y: None
-            height: "70dp"
-            padding: ["18dp", "8dp", "20dp", "8dp"]
-            spacing: "6dp"
+            height: "62dp"
+            padding: ["15dp", "5dp", "15dp", "5dp"]
+            spacing: "3dp"
 
             MDIconButton:
                 icon: "account-circle"
+                icon_size: "30sp"
                 on_release: root.open_profile()
 
             Widget:
@@ -480,6 +482,7 @@ KV = r'''
 
             MDIconButton:
                 icon: "cog"
+                icon_size: "30sp"
                 on_release: root.open_settings()
 
         MDScrollView:
@@ -487,92 +490,132 @@ KV = r'''
             MDBoxLayout:
                 orientation: "vertical"
                 adaptive_height: True
-                padding: ["18dp", "18dp", "20dp", "125dp"]
-                spacing: "20dp"
+                padding: ["15dp", "14dp", "15dp", "90dp"]
+                spacing: "14dp"
 
                 MDLabel:
                     text: root.ids.week_cal.month_label
                     bold: True
                     font_style: "H6"
+                    font_size: "24sp"
 
-                WeekCalendar:
-                    id: week_cal
-                    size_hint_x: 1
+                MDBoxLayout:
+                    size_hint_y: None
+                    height: week_cal.height
+                    padding: ["8dp", 0, 0, 0]
+                    WeekCalendar:
+                        id: week_cal
+                        size_hint_x: 1
 
                 MDLabel:
                     text: "Bugün nasıl hissediyorsun?"
                     bold: True
+                    font_size: "19sp"
 
-                MDGridLayout:
-                    cols: 3
-                    adaptive_height: True
-                    spacing: "8dp"
-                    SymptomBtn:
-                        text: "Sakin"
-                        icon: "emoticon-happy-outline"
-                        group: "mood"
-                    SymptomBtn:
-                        text: "Mutlu"
-                        icon: "emoticon-outline"
-                        group: "mood"
-                    SymptomBtn:
-                        text: "Enerjik"
-                        icon: "lightning-bolt-outline"
-                        group: "mood"
-                    SymptomBtn:
-                        text: "Depresif"
-                        icon: "emoticon-sad-outline"
-                        group: "mood"
-                    SymptomBtn:
-                        text: "Sinirli"
-                        icon: "emoticon-angry-outline"
-                        group: "mood"
-                    SymptomBtn:
-                        text: "Yorgun"
-                        icon: "emoticon-confused-outline"
-                        group: "mood"
+                Widget:
+                    size_hint_y: None
+                    height: "16dp"
+
+                MDAnchorLayout:
+                    size_hint_y: None
+                    height: grid_mood.minimum_height
+                    anchor_x: "center"
+                    anchor_y: "center"
+                    MDGridLayout:
+                        id: grid_mood
+                        cols: 3
+                        adaptive_height: True
+                        size_hint_x: None
+                        width: self.minimum_width
+                        spacing: "5dp"
+                        SymptomBtn:
+                            text: "Sakin"
+                            icon: "emoticon-happy-outline"
+                            group: "mood"
+                        SymptomBtn:
+                            text: "Mutlu"
+                            icon: "emoticon-outline"
+                            group: "mood"
+                        SymptomBtn:
+                            text: "Enerjik"
+                            icon: "lightning-bolt-outline"
+                            group: "mood"
+                        SymptomBtn:
+                            text: "Depresif"
+                            icon: "emoticon-sad-outline"
+                            group: "mood"
+                        SymptomBtn:
+                            text: "Sinirli"
+                            icon: "emoticon-angry-outline"
+                            group: "mood"
+                        SymptomBtn:
+                            text: "Yorgun"
+                            icon: "emoticon-confused-outline"
+                            group: "mood"
+
+                Widget:
+                    size_hint_y: None
+                    height: "14dp"
 
                 MDLabel:
                     text: "Bugün hangi semptomları yaşadınız?"
                     bold: True
+                    font_size: "19sp"
 
-                MDGridLayout:
-                    cols: 3
-                    adaptive_height: True
-                    spacing: "8dp"
-                    SymptomBtn:
-                        text: "Kas Ağrısı"
-                        icon: "bone"
-                        group: "symptom"
-                    SymptomBtn:
-                        text: "Öksürük"
-                        icon: "lungs"
-                        group: "symptom"
-                    SymptomBtn:
-                        text: "Baş Ağrısı"
-                        icon: "head-cog-outline"
-                        group: "symptom"
-                    SymptomBtn:
-                        text: "Mide Bulantısı"
-                        icon: "stomach"
-                        group: "symptom"
-                    SymptomBtn:
-                        text: "Uykusuzluk"
-                        icon: "sleep-off"
-                        group: "symptom"
-                    SymptomBtn:
-                        text: "Eklem Ağrısı"
-                        icon: "human-handsup"
-                        group: "symptom"
+                Widget:
+                    size_hint_y: None
+                    height: "16dp"
+
+                MDAnchorLayout:
+                    size_hint_y: None
+                    height: grid_symptoms.minimum_height
+                    anchor_x: "center"
+                    anchor_y: "center"
+                    MDGridLayout:
+                        id: grid_symptoms
+                        cols: 3
+                        adaptive_height: True
+                        size_hint_x: None
+                        width: self.minimum_width
+                        spacing: "5dp"
+                        SymptomBtn:
+                            text: "Kas Ağrısı"
+                            icon: "bone"
+                            group: "symptom"
+                        SymptomBtn:
+                            text: "Öksürük"
+                            icon: "lungs"
+                            group: "symptom"
+                        SymptomBtn:
+                            text: "Baş Ağrısı"
+                            icon: "head-cog-outline"
+                            group: "symptom"
+                        SymptomBtn:
+                            text: "Mide Bulantısı"
+                            icon: "stomach"
+                            group: "symptom"
+                        SymptomBtn:
+                            text: "Uykusuzluk"
+                            icon: "sleep-off"
+                            group: "symptom"
+                        SymptomBtn:
+                            text: "Eklem Ağrısı"
+                            icon: "human-handsup"
+                            group: "symptom"
+
+                Widget:
+                    size_hint_y: None
+                    height: "16dp"
 
                 MDLabel:
                     text: "Hatırlatıcı"
                     bold: True
+                    font_size: "19sp"
 
                 MDBoxLayout:
                     orientation: "vertical"
                     adaptive_height: True
-                    spacing: "12dp"
+                    spacing: "9dp"
 
                     MDAnchorLayout:
                         id: empty_meds
@@ -591,7 +634,7 @@ KV = r'''
                         id: medicines_list
                         orientation: "vertical"
                         adaptive_height: True
-                        spacing: "12dp"
+                        spacing: "9dp"
 
     MDFloatLayout:
         MDCard:
@@ -599,7 +642,7 @@ KV = r'''
             size_hint: None, None
             width: "200dp"
             height: "190dp"
-            pos_hint: {"right": .84, "y": .12}
+            pos_hint: {"right": .86, "y": .115}
             radius: [50, 50, 5, 50]
             md_bg_color: [1, 1, 1, 1]
             elevation: 8
@@ -645,25 +688,28 @@ KV = r'''
         MDCard:
             size_hint: 0.95, None
             height: "70dp"
-            pos_hint: {"center_x": .5, "center_y": .06}
+            pos_hint: {"center_x": .5, "center_y": .058}
             radius: [35,]
             elevation: 0
-            md_bg_color: [1, 1, 1, 0.98]
+            md_bg_color: [1, 1, 1, 0.85]
             MDBoxLayout:
-                padding: ["25dp", 0, "115dp", 0]
+                padding: ["22dp", 0, "80dp", 0]
                 spacing: "30dp"
                 MDIconButton:
                     icon: "home"
+                    icon_size: "30sp"
                     theme_icon_color: "Custom"
                     icon_color: [0.5, 0.3, 0.9, 1]
                     pos_hint: {"center_y": .5}
                     on_release: root.nav_action("dashboard")
                 MDIconButton:
                     icon: "calendar-month-outline"
+                    icon_size: "30sp"
                     pos_hint: {"center_y": .5}
                     on_release: root.nav_action("takvim")
                 MDIconButton:
                     icon: "chart-line"
+                    icon_size: "30sp"
                     pos_hint: {"center_y": .5}
                     on_release: root.nav_action("grafik")
 
@@ -671,8 +717,8 @@ KV = r'''
             icon: "plus"
             icon_size: "50sp"
             size_hint: None, None
-            size: "100dp", "100dp"
-            pos_hint: {"center_x": .82, "center_y": .09}
+            size: "96dp", "96dp"
+            pos_hint: {"center_x": .83, "center_y": .08}
             md_bg_color: [0.5, 0.3, 0.9, 1]
             theme_icon_color: "Custom"
             icon_color: [1, 1, 1, 1]
@@ -688,6 +734,9 @@ class DashboardEkrani(MDScreen):
     medicines = ListProperty([])
 
     def on_enter(self, *args):
+        if not hasattr(self, "db"):
+            self.db = Database()
+
         self.week_cal = self.ids.week_cal
         self.medicines_list = self.ids.medicines_list
         self.empty_meds = self.ids.empty_meds
@@ -697,7 +746,6 @@ class DashboardEkrani(MDScreen):
         self.medicine_cards = []
         self.day_moods = {}
         self.day_symptoms = {}
-        self.day_medicine_actions = {}
         self.week_cal.bind(selected_idx=self.apply_day_state, days=self.apply_day_state)
 
         self.menu_card = self.ids.menu_card
@@ -761,10 +809,11 @@ class DashboardEkrani(MDScreen):
 
     def record_medicine_action(self, card, action: str):
         if not card.medicine_id:
-            card.medicine_id = f"{card.pill}|{card.time}|{card.note}"
+            return
         date_key = self._selected_date_key()
-        actions = self.day_medicine_actions.setdefault(date_key, {})
-        actions[card.medicine_id] = action
+        med_id = int(card.medicine_id)
+        durum = "ALINDI" if action == "taken" else "ATLADI"
+        self.db.ilac_logla(med_id, date_key, durum)
         card.select_action(action)
 
     def apply_day_state(self, *_):
@@ -778,11 +827,43 @@ class DashboardEkrani(MDScreen):
             elif btn.group == "symptom":
                 btn.selected = btn.text in symptoms
 
-        actions = self.day_medicine_actions.get(date_key, {})
+        actions = self.db.gunluk_loglari_getir(date_key)
         for card in getattr(self, "medicine_cards", []):
-            card.selected_action = actions.get(card.medicine_id, "")
+            try:
+                med_id = int(card.medicine_id)
+            except (TypeError, ValueError):
+                card.selected_action = ""
+                continue
+            durum = actions.get(med_id)
+            if durum == "ALINDI":
+                card.selected_action = "taken"
+            elif durum == "ATLADI":
+                card.selected_action = "skipped"
+            else:
+                card.selected_action = ""
 
     def refresh_medicines(self):
+        meds = self.db.kullanici_ilaclarini_getir()
+        self.medicines = []
+        for med_id, ilac_adi, doz, saat, periyot in meds:
+            if doz and periyot:
+                note = f"{doz} - {periyot}"
+            elif doz:
+                note = doz
+            elif periyot:
+                note = periyot
+            else:
+                note = ""
+            self.medicines.append(
+                {
+                    "id": str(med_id),
+                    "time": saat,
+                    "pill": ilac_adi,
+                    "note": note,
+                    "bg": [0.9, 0.86, 0.98, 1],
+                    "btn_color": [0.5, 0.3, 0.9, 1],
+                }
+            )
         self.medicines_list.clear_widgets()
         self.medicine_cards = []
         if not self.medicines:

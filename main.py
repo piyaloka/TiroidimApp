@@ -10,7 +10,6 @@ Config.write()
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager
 from kivy.core.window import Window
-from kivy.metrics import Metrics
 from database import Database
 
 # Ekranlar
@@ -26,9 +25,6 @@ from screens.ayarlar_ekrani import AyarlarEkrani
 
 class TiroidimApp(MDApp):
     def build(self):
-        # Bu ayar widgetların devasa olmasını engeller
-        Metrics.density = 1.0 
-        
         self.theme_cls.primary_palette = "DeepPurple"
         self.theme_cls.accent_palette = "Green"
         self.theme_cls.material_style = "M3"
