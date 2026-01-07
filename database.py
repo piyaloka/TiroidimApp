@@ -201,6 +201,15 @@ class Database:
         conn.commit()
         conn.close()
 
+    def ilac_saati_guncelle(self, ilac_id, yeni_saat):
+        """Seçilen ilacın saatini günceller."""
+        conn = self.baglanti_ac()
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE kullanici_ilaclari SET saat = ? WHERE id = ?", (yeni_saat, ilac_id))
+        conn.commit()
+        conn.close()
+
     def ilac_logla(self, ilac_id, tarih, durum):
         """Üye 9 için: Dashboard'daki 'Aldım/Atladım' butonlarını kaydeder. [cite: 68]"""
         conn = self.baglanti_ac()

@@ -102,7 +102,7 @@ class AyarlarEkrani(MDScreen):
     def ilac_sec(self, ilac):
         self.secili_id = ilac[0]
         self.ids.ilac_secimi.text = ilac[1]
-        self.ids.yeni_saat.text = ilac[2]
+        self.ids.yeni_saat.text = ilac[3]
         self.menu.dismiss()
 
     def bildirim_kaydet(self, aktif):
