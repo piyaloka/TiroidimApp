@@ -1,114 +1,209 @@
+import sys
+import os
+
+# Yol hatası almamak için
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
+from kivy.lang import Builder
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.menu import MDDropdownMenu
-from kivy.lang import Builder
+from kivymd.toast import toast
 from database import Database
 
-KV = """
+# --- KV TASARIM ---
+KV_AYARLAR = """
 <AyarlarEkrani>:
-    name: "ayarlar"
     md_bg_color: 1, 1, 1, 1
 
     MDBoxLayout:
         orientation: "vertical"
-        padding: "20dp"
-        spacing: "15dp"
 
-        MDLabel:
-            text: "Ayarlar & Düzenleme"
-            halign: "center"
-            font_style: "H6"
-            theme_text_color: "Custom"
-            text_color: 0.5, 0.2, 0.8, 1
-
-        MDCard:
-            padding: "16dp"
+        # ÜST BAR
+        MDBoxLayout:
             size_hint_y: None
-            height: "80dp"
-            radius: [15,]
-            elevation: 1
-
-            MDBoxLayout:
-                orientation: "horizontal"
-                spacing: "10dp"
-
-                MDLabel:
-                    text: "İlaç hatırlatıcılarını aç"
-                    halign: "left"
-
-                MDSwitch:
-                    id: bildirim_switch
-                    on_active: root.bildirim_kaydet(self.active)
-
-        MDCard:
-            orientation: "vertical"
-            padding: "20dp"
+            height: "70dp"
+            padding: "10dp"
             spacing: "10dp"
+            md_bg_color: app.theme_cls.primary_color
+            elevation: 2
+
+            MDIconButton:
+                icon: "arrow-left"
+                theme_icon_color: "Custom"
+                icon_color: 1, 1, 1, 1
+                on_release:
+                    root.manager.current = "dashboard"
+                    root.manager.transition.direction = "right"
+
+            MDLabel:
+                text: "Ayarlar & Düzenleme"
+                font_style: "H6"
+                bold: True
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
+
+        # İÇERİK
+        ScrollView:
+            MDBoxLayout:
+                orientation: "vertical"
+                adaptive_height: True
+                padding: "20dp"
+                spacing: "20dp"
+
+                # BİLDİRİM AYARI
+                MDCard:
+                    orientation: "vertical"
+                    adaptive_height: True
+                    radius: [20,]
+                    padding: "15dp"
+                    spacing: "10dp"
+                    elevation: 1
+
+                    MDLabel:
+                        text: "Uygulama Tercihleri"
+                        font_style: "Subtitle1"
+                        bold: True
+
+                    MDSeparator:
+
+                    MDBoxLayout:
+                        size_hint_y: None
+                        height: "40dp"
+
+                        MDLabel:
+                            text: "İlaç hatırlatıcılarını aç"
+
+                        MDSwitch:
+                            id: switch_bildirim
+                            on_active: root.bildirim_ayarini_degistir(*args)
+
+                # İLAÇ SAATİ GÜNCELLEME
+                MDCard:
+                    orientation: "vertical"
+                    adaptive_height: True
+                    radius: [20,]
+                    padding: "20dp"
+                    spacing: "15dp"
+                    elevation: 1
+
+                    MDLabel:
+                        text: "İlaç Saati Güncelle"
+                        font_style: "Subtitle1"
+                        bold: True
+
+                    MDTextField:
+                        id: secilen_ilac_kutusu
+                        hint_text: "Düzenlenecek ilacı seçin"
+                        mode: "rectangle"
+                        icon_right: "chevron-down"
+                        readonly: True
+                        on_focus: if self.focus: root.menu_ac()
+
+                    MDTextField:
+                        id: yeni_saat_input
+                        hint_text: "Yeni Saat (Örn: 08:30)"
+                        mode: "rectangle"
+                        disabled: True
+
+                    MDFillRoundFlatButton:
+                        text: "Saati Güncelle"
+                        on_release: root.saat_guncelle()
+
+        # ALT BUTON
+        AnchorLayout:
+            anchor_x: "right"
+            anchor_y: "bottom"
             size_hint_y: None
-            height: "250dp"
-            radius: [15,]
-            elevation: 1
+            height: "100dp"
+            padding: [0, 0, "30dp", "30dp"]
 
-            MDTextField:
-                id: ilac_secimi
-                hint_text: "Düzenlenecek ilacı seçin"
-                readonly: True
-                on_focus: if self.focus: root.menu_ac()
-
-            MDTextField:
-                id: yeni_saat
-                hint_text: "Yeni Saat (Örn: 08:30)"
-
-            MDRaisedButton:
-                text: "Saati Güncelle"
-                md_bg_color: 0.5, 0.2, 0.8, 1
-                on_release: root.saat_guncelle()
-
-        Widget:
-            size_hint_y: 1
-
-        MDFlatButton:
-            text: "Geri Dön"
-            pos_hint: {"center_x": 0.5}
-            on_release: app.root.current = "dashboard"
+            MDFillRoundFlatButton:
+                text: "KAYDET VE DÖN"
+                on_release:
+                    root.manager.current = "dashboard"
+                    root.manager.transition.direction = "right"
 """
 
-Builder.load_string(KV)
+Builder.load_string(KV_AYARLAR)
+
 
 class AyarlarEkrani(MDScreen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.db = Database()
-        self.menu = None
-        self.secili_id = None
+    menu = None
+    secili_ilac_id = None
 
     def on_enter(self):
-        ayar = self.db.ayarlari_getir()
-        if ayar:
-            self.ids.bildirim_switch.active = bool(ayar["bildirim_acik"])
+        self.verileri_yukle()
+        self.bildirim_durumunu_getir()
 
-        ilaclar = self.db.kullanici_ilaclarini_getir()
-        items = [{
-            "viewclass": "OneLineListItem",
-            "text": i[1],
-            "on_release": lambda x=i: self.ilac_sec(x),
-        } for i in ilaclar]
+    def verileri_yukle(self):
+        db = Database()
+        ilaclar = db.kullanici_ilaclarini_getir()
 
-        self.menu = MDDropdownMenu(caller=self.ids.ilac_secimi, items=items, width_mult=4)
+        if not ilaclar:
+            toast("Kayıtlı ilaç bulunamadı")
+            return
+
+        menu_items = []
+        for ilac in ilaclar:
+            menu_items.append({
+                "viewclass": "OneLineListItem",
+                "text": f"{ilac[1]} ({ilac[2]}) - {ilac[3]}",
+                "on_release": lambda x=ilac: self.ilac_secildi(x)
+            })
+
+        self.menu = MDDropdownMenu(
+            caller=self.ids.secilen_ilac_kutusu,
+            items=menu_items,
+            width_mult=4
+        )
 
     def menu_ac(self):
+        self.ids.secilen_ilac_kutusu.focus = False
         if self.menu:
             self.menu.open()
 
-    def ilac_sec(self, ilac):
-        self.secili_id = ilac[0]
-        self.ids.ilac_secimi.text = ilac[1]
-        self.ids.yeni_saat.text = ilac[3]
+    def ilac_secildi(self, ilac):
+        self.secili_ilac_id = ilac[0]
+        self.ids.secilen_ilac_kutusu.text = f"{ilac[1]} - {ilac[2]}"
+        self.ids.yeni_saat_input.text = ilac[3]
+        self.ids.yeni_saat_input.disabled = False
         self.menu.dismiss()
 
-    def bildirim_kaydet(self, aktif):
-        self.db.ayar_guncelle("bildirim_acik", 1 if aktif else 0)
-
     def saat_guncelle(self):
-        if self.secili_id:
-            self.db.ilac_saati_guncelle(self.secili_id, self.ids.yeni_saat.text)
-            self.ids.ilac_secimi.text = "Güncellendi!"
+        if not self.secili_ilac_id:
+            toast("Lütfen önce bir ilaç seçin!")
+            return
+
+        yeni_saat = self.ids.yeni_saat_input.text
+        if not yeni_saat:
+            toast("Saat boş olamaz")
+            return
+
+        db = Database()
+        conn = db.baglanti_ac()
+        conn.execute(
+            "UPDATE kullanici_ilaclari SET saat = ? WHERE id = ?",
+            (yeni_saat, self.secili_ilac_id)
+        )
+        conn.commit()
+        conn.close()
+
+        toast("Saat güncellendi")
+
+        self.ids.secilen_ilac_kutusu.text = ""
+        self.ids.yeni_saat_input.text = ""
+        self.ids.yeni_saat_input.disabled = True
+        self.secili_ilac_id = None
+        self.verileri_yukle()
+
+    def bildirim_durumunu_getir(self):
+        db = Database()
+        ayarlar = db.ayarlari_getir()
+        if ayarlar:
+            self.ids.switch_bildirim.active = bool(ayarlar.get("bildirim_acik", 1))
+
+    def bildirim_ayarini_degistir(self, instance, value):
+        db = Database()
+        db.ayar_guncelle("bildirim_acik", 1 if value else 0)
