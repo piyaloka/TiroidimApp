@@ -1,10 +1,10 @@
 import os
 from kivy.config import Config
 
-# Pencere boyutunu ve yeniden boyutlandırılmasını buradan sabitliyoruz
+#Pencere boyutlandırılması
 Config.set('graphics', 'width', '400')
 Config.set('graphics', 'height', '750')
-Config.set('graphics', 'resizable', '0') # Boyutlandırmayı kapatalım ki sabit kalsın
+Config.set('graphics', 'resizable', '0') #Boyutlandırmayı kapatıyoruz ki sabit kalsın
 Config.write()
 
 from kivymd.app import MDApp
@@ -12,7 +12,7 @@ from kivy.uix.screenmanager import ScreenManager
 from kivy.core.window import Window
 from database import Database
 
-# Ekranlar
+#Ekranlarımız
 from screens.giris_ekrani import GirisEkrani, HosgeldinEkrani
 from screens.onboarding_ekrani import OnboardingEkrani
 from screens.hastalik_secme import HastalikSecmeEkrani
@@ -30,13 +30,13 @@ class TiroidimApp(MDApp):
         self.theme_cls.material_style = "M3"
         self.title = "Tiroidim"
 
-        # Veritabanı
+        #Veritabanı
         db = Database()
 
-        # Yönetici
+        #Yönetici
         yonetici = ScreenManager()
 
-        # Ekran Ekleme
+        #Ekranların Ekleme Kısmımız
         yonetici.add_widget(GirisEkrani(name="giris"))
         yonetici.add_widget(HosgeldinEkrani(name="hosgeldin"))
         yonetici.add_widget(OnboardingEkrani(name="onboarding"))
